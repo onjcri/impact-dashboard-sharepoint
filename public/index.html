@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>All Staff Impact Strategy Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Segoe UI, Tahoma, sans-serif; background:#f7f9fb; color:#2b2b2b; margin:0; padding:24px; }
+    h1 { margin:0 0 12px; color:#103c60; font-size:24px; }
+    .sub { color:#3a5876; margin:0 0 20px; }
+    .toolbar { display:flex; gap:8px; align-items:center; margin-bottom:16px; }
+    button { background:#0066cc; color:#fff; border:0; padding:8px 12px; border-radius:6px; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:default; }
+    table { width:100%; border-collapse:collapse; background:#fff; }
+    th, td { border-bottom:1px solid #e5ecf3; padding:10px 12px; font-size:14px; vertical-align:top; }
+    th { text-align:left; background:#f0f4f8; color:#003e6b; }
+    .pill { font-size:12px; background:#eef4ff; color:#003e6b; padding:2px 6px; border-radius:999px; }
+    .hint { font-size:12px; color:#555; margin-top:10px; }
+    .footer { margin-top:16px; font-size:12px; color:#6b7280; }
+  </style>
+</head>
+<body>
+  <h1>All Staff Impact Strategy Tracker</h1>
+  <p class="sub">Simple intranet view. Data comes from Monday, with keys protected on the server.</p>
+
+  <div class="toolbar">
+    <button id="refreshBtn">Refresh data</button>
+    <span id="count" class="pill">Loading…</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Milestone</th><th>Target date</th><th>Activities</th><th>Description</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <p class="hint">If no data appears, check env vars on the server: MONDAY_API_KEY and MAIN_BOARD_ID.</p>
+  <div class="footer">Built for ONJCRI staff access</div>
+
+<script>
+async function load() {
+  const btn = document.getElementById('refreshBtn');
+  const rows = document.getElementById('rows');
+  const count = document.getElementById('count');
+  btn.disabled = true; count.textContent = 'Loading…';
+
+  try {
+    const r = await fetch('/api/milestones');
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'Error');
+
+    rows.innerHTML = j.items.map(it => `
+      <tr>
+        <td>${it.name}</td>
+        <td>${it.date || '—'}</td>
+        <td>${it.subcount}</td>
+        <td>${it.description ? it.description.replace(/</g,'&lt;') : ''}</td>
+      </tr>
+    `).join('');
+    count.textContent = `${j.items.length} milestones`;
+  } catch (e) {
+    rows.innerHTML = `<tr><td colspan="4">Could not load data.</td></tr>`;
+    count.textContent = 'Error';
+  } finally {
+    btn.disabled = false;
+  }
+}
+document.getElementById('refreshBtn').addEventListener('click', load);
+load();
+</script>
+</body>
+</html>
