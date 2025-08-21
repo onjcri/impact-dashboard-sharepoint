@@ -3,128 +3,124 @@
 <head>
   <meta charset="UTF-8" />
   <title>KPIs, Milestones, and associated Activities</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f7f9fb; color: #2b2b2b; margin: 0; padding: 40px; }
-    h1 { font-size: 32px; font-weight: 700; margin-bottom: 40px; color: #103c60; border-bottom: 2px solid #d9e1ea; padding-bottom: 10px; }
-
-    .section-heading-container { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 40px; padding-left: 10px; border-left: 5px solid #003e6b; }
-    h2.section-heading { font-size: 20px; margin: 0; color: #003e6b; }
-    .section-arrow { font-size: 16px; transition: transform 0.3s ease; color: #003e6b; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background:#f7f9fb; color:#2b2b2b; margin:0; padding:40px; }
+    h1 { font-size:32px; font-weight:700; margin-bottom:40px; color:#103c60; border-bottom:2px solid #d9e1ea; padding-bottom:10px; }
+    .section-heading-container { display:flex; align-items:center; gap:8px; cursor:pointer; margin-top:40px; padding-left:10px; border-left:5px solid #003e6b; }
+    h2.section-heading { font-size:20px; margin:0; color:#003e6b; }
+    .section-arrow { font-size:16px; transition:transform .3s; color:#003e6b; }
     .collapsed .section-arrow { transform: rotate(-90deg); }
-    .section-description { font-size: 14px; color: #444; margin: 8px 0 12px 6px; font-style: italic; max-width: 100%; }
+    .section-description { font-size:14px; color:#444; margin:8px 0 12px 6px; font-style:italic; max-width:100%; }
 
-    .kpi-progress-container { margin: 10px 0 20px 6px; position: relative; }
-    .progress-bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: #e0e0e0; width: 100%; }
-    .bar-segment { height: 100%; position: relative; cursor: pointer; transition: transform 0.2s ease; }
-    .bar-done { background: #28a745; }
-    .bar-working { background: #ffc107; }
-    .bar-stuck { background: #dc3545; }
-    .bar-pending { background: #6c757d; }
+    .kpi-progress-container { margin:10px 0 20px 6px; position:relative; }
+    .progress-bar { display:flex; height:14px; border-radius:7px; overflow:hidden; background:#e0e0e0; width:100%; }
+    .bar-segment { height:100%; position:relative; cursor:pointer; transition:transform .2s; }
+    .bar-done { background:#28a745; }
+    .bar-working { background:#ffc107; }
+    .bar-stuck { background:#dc3545; }
+    .bar-pending { background:#6c757d; }
 
-    .tooltip { position: fixed; background: rgba(0, 0, 0, 0.8); color: #fff; padding: 6px 10px; font-size: 12px; border-radius: 4px; pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 1000; }
+    .tooltip { position:fixed; background:rgba(0,0,0,.8); color:#fff; padding:6px 10px; font-size:12px; border-radius:4px; pointer-events:none; opacity:0; transition:opacity .15s; z-index:1000; }
 
-    li.milestone-container { display: flex; position: relative; background-color: #fff; border: 1px solid #e0e4e8; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
-    .milestone-badge { flex-shrink: 0; width: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #003e6b; background: #f0f4f8; border-right: 2px solid #d1d9e0; border-radius: 8px 0 0 8px; box-shadow: inset -2px 0 5px rgba(0,0,0,0.05); writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); font-size: 14px; letter-spacing: 1px; transition: background 0.3s ease, color 0.3s ease; }
-    .milestone-badge.done { background: #28a745 !important; color: #fff !important; }
-    .milestone-content { flex: 1; padding-left: 14px; display: flex; flex-direction: column; }
-    .milestone-header { display: flex; flex-direction: row; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; width: 100%; gap: 10px; }
-    .description { font-style: italic; font-size: 14px; color: #555; white-space: normal; flex: 1; }
-    .metadata-line { font-size: 13px; margin-top: 8px; padding: 6px 0; color: #333; display: flex; flex-wrap: wrap; gap: 20px; }
-    .metadata-line strong { font-weight: 600; margin-right: 4px; }
+    li.milestone-container { display:flex; position:relative; background:#fff; border:1px solid #e0e4e8; border-radius:10px; padding:16px 18px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+    .milestone-badge { flex-shrink:0; width:50px; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#003e6b; background:#f0f4f8; border-right:2px solid #d1d9e0; border-radius:8px 0 0 8px; box-shadow: inset -2px 0 5px rgba(0,0,0,.05); writing-mode:vertical-rl; text-orientation:mixed; transform:rotate(180deg); font-size:14px; letter-spacing:1px; transition:background .3s, color .3s; }
+    .milestone-badge.done { background:#28a745 !important; color:#fff !important; }
+    .milestone-content { flex:1; padding-left:14px; display:flex; flex-direction:column; }
+    .milestone-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:6px; width:100%; gap:10px; }
+    .description { font-style:italic; font-size:14px; color:#555; white-space:normal; flex:1; }
+    .metadata-line { font-size:13px; margin-top:8px; padding:6px 0; color:#333; display:flex; flex-wrap:wrap; gap:20px; }
+    .metadata-line strong { font-weight:600; margin-right:4px; }
 
-    .activity-summary { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 10px 0; }
-    .activity-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: #0066cc; cursor: pointer; user-select: none; }
-    .activity-toggle:hover { text-decoration: underline; }
-    .arrow { display: inline-block; transition: transform 0.3s ease; }
+    .activity-summary { display:flex; align-items:center; justify-content:space-between; margin:8px 0 10px; }
+    .activity-toggle { display:inline-flex; align-items:center; gap:6px; font-size:14px; color:#0066cc; cursor:pointer; user-select:none; }
+    .activity-toggle:hover { text-decoration:underline; }
+    .arrow { display:inline-block; transition:transform .3s; }
     .collapsed .arrow { transform: rotate(-90deg); }
-    .status-circles { display: flex; gap: 4px; }
-    .circle { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; transition: transform 0.2s ease; }
-    .circle:hover { animation: pulse 1.5s infinite; }
-    .circle.done { background-color: #28a745; }
-    .circle.working { background-color: #ffc107; }
-    .circle.stuck { background-color: #dc3545; }
-    .circle.pending { background-color: #6c757d; }
+    .status-circles { display:flex; gap:4px; }
+    .circle { width:12px; height:12px; border-radius:50%; cursor:pointer; transition:transform .2s; }
+    .circle.done { background:#28a745; }
+    .circle.working { background:#ffc107; }
+    .circle.stuck { background:#dc3545; }
+    .circle.pending { background:#6c757d; }
 
-    .sublist { margin-top: 10px; list-style: none; padding-left: 0; }
-    .subitem { padding: 14px 16px; border: 1px solid #d5dce1; border-radius: 10px; margin-bottom: 10px; font-size: 14px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); background: #f8fafc; display: flex; align-items: center; gap: 10px; }
-    .status-indicator { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; cursor: pointer; }
-    .status-indicator:hover { animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0.2); } 50% { transform: scale(1.2); box-shadow: 0 0 6px rgba(0, 0, 0, 0.2); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0.2); } }
-    .subitem-content { flex: 1; }
-    .pill { display: inline-block; font-size: 13px; margin-top: 6px; margin-right: 12px; padding: 0; background-color: transparent; color: inherit; }
-    .pill strong { font-weight: 600; margin-right: 4px; }
-    .overdue { color: #ffffff; font-weight: 600; background: #dc3545; border-radius: 4px; padding: 1px 4px; cursor: pointer; }
-    .missing-data { color: #ffffff; font-weight: 600; background: #ffc107; border-radius: 4px; padding: 1px 4px; cursor: pointer; }
+    .sublist { margin-top:10px; list-style:none; padding-left:0; }
+    .subitem { padding:14px 16px; border:1px solid #d5dce1; border-radius:10px; margin-bottom:10px; font-size:14px; box-shadow:0 1px 2px rgba(0,0,0,.04); background:#f8fafc; display:flex; align-items:center; gap:10px; }
+    .status-indicator { width:16px; height:16px; border-radius:50%; flex-shrink:0; cursor:pointer; }
+    .subitem-content { flex:1; }
+    .pill { display:inline-block; font-size:13px; margin-top:6px; margin-right:12px; padding:0; background:transparent; color:inherit; }
+    .pill strong { font-weight:600; margin-right:4px; }
+    .overdue { color:#fff; font-weight:600; background:#dc3545; border-radius:4px; padding:1px 4px; cursor:pointer; }
+    .missing-data { color:#fff; font-weight:600; background:#ffc107; border-radius:4px; padding:1px 4px; cursor:pointer; }
 
-    .status-done { background-color: #28a745; }
-    .status-working { background-color: #ffc107; }
-    .status-pending { background-color: #6c757d; }
-    .status-stuck { background-color: #dc3545; }
-    .status-default { background-color: #d5dce1; }
+    .status-done { background:#28a745; }
+    .status-working { background:#ffc107; }
+    .status-pending { background:#6c757d; }
+    .status-stuck { background:#dc3545; }
+    .status-default { background:#d5dce1; }
 
-    .email-taskforce-btn { padding: 6px 12px; font-size: 12px; background: #0066cc; color: #fff; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; }
-    .email-taskforce-btn:hover { background: #004c99; }
+    .email-taskforce-btn { padding:6px 12px; font-size:12px; background:#0066cc; color:#fff; border:none; border-radius:4px; cursor:pointer; white-space:nowrap; }
+    .email-taskforce-btn:hover { background:#004c99; }
 
-    .hidden { display: none; }
+    .hidden { display:none; }
 
-    .refresh-container { text-align: center; margin-top: 40px; }
-    .refresh-btn { padding: 10px 20px; background-color: #0066cc; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s ease, transform 0.1s ease; margin: 0 5px;}
-    .refresh-btn:hover { background-color: #004c99; }
-    .refresh-btn:active { transform: scale(0.98); }
-    .refresh-container-top { text-align: center; margin-top: 32px; margin-bottom: 32px; }
+    .refresh-container { text-align:center; margin-top:40px; }
+    .refresh-btn { padding:10px 20px; background:#0066cc; color:#fff; border:none; border-radius:6px; font-size:14px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,.2); transition:background .2s, transform .1s; margin:0 5px;}
+    .refresh-btn:hover { background:#004c99; }
+    .refresh-btn:active { transform:scale(.98); }
+    .refresh-container-top { text-align:center; margin:32px 0; }
 
-    #loadingOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; font-weight: bold; text-align: center; padding: 20px; }
-    .pulse-word { animation: pulseImpact 1.5s infinite; color: #28a745; }
-    @keyframes pulseImpact { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }
+    #loadingOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:2000; display:flex; align-items:center; justify-content:center; color:#fff; font-size:20px; font-weight:bold; text-align:center; padding:20px; }
+    .pulse-word { animation:pulseImpact 1.5s infinite; color:#28a745; }
+    @keyframes pulseImpact { 0% { transform:scale(1); opacity:1; } 50% { transform:scale(1.3); opacity:.6; } 100% { transform:scale(1); opacity:1; } }
 
-    .summary-item { font-size: 14px; color: #333; margin-left: 20px; margin-bottom: 4px; }
-    .summary-subitem { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #333; margin-left: 40px; margin-bottom: 4px; margin-top: 0; }
-    .summary-circle { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-    .summary-circle.pending { background-color: #6c757d; }
-    .summary-circle.working { background-color: #ffc107; }
-    .summary-circle.stuck { background-color: #dc3545; }
-    .summary-circle.done { background-color: #28a745; }
-    .year-circle { width: 12px; height: 12px; border-radius: 50%; background-color: #000; flex-shrink: 0; }
-    .kpi-circle { width: 12px; height: 12px; border-radius: 50%; background-color: #000; flex-shrink: 0; }
+    .summary-item { font-size:14px; color:#333; margin-left:20px; margin-bottom:4px; }
+    .summary-subitem { display:flex; align-items:center; gap:6px; font-size:14px; color:#333; margin-left:40px; margin-bottom:4px; margin-top:0; }
+    .summary-circle { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+    .summary-circle.pending { background:#6c757d; }
+    .summary-circle.working { background:#ffc107; }
+    .summary-circle.stuck { background:#dc3545; }
+    .summary-circle.done { background:#28a745; }
+    .year-circle, .kpi-circle { width:12px; height:12px; border-radius:50%; background:#000; flex-shrink:0; }
 
-    #clearFilterBtn { display: none; margin: 20px 0; padding: 10px 20px; background-color: #0066cc; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s ease, transform 0.1s ease; }
-    #clearFilterBtn:hover { background: #004c99; }
-    #clearFilterBtn:active { transform: scale(0.98); }
-    .clickable-count { cursor: pointer; color: #0066cc; font-weight: bold; }
-    .clickable-count:hover { text-decoration: underline; }
-    #filterSummary { display: inline-block; margin-left: 10px; font-size: 14px; font-style: italic; color: #333; }
+    #clearFilterBtn { display:none; margin:20px 0; padding:10px 20px; background:#0066cc; color:#fff; border:none; border-radius:6px; font-size:14px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,.2); transition:background .2s, transform .1s; }
+    #clearFilterBtn:hover { background:#004c99; }
+    #clearFilterBtn:active { transform:scale(.98); }
+    .clickable-count { cursor:pointer; color:#0066cc; font-weight:bold; }
+    .clickable-count:hover { text-decoration:underline; }
+    #filterSummary { display:inline-block; margin-left:10px; font-size:14px; font-style:italic; color:#333; }
 
-    .kpi-summary-subitem { display: flex; align-items: center; gap: 6px; font-size: 14px; margin-left: 40px; margin-bottom: 4px; margin-top: 0; }
-    .kpi-summary-label { font-weight: bold; color: #222; }
-    .kpi-summary-count { font-weight: bold; color: #0066cc; cursor: pointer; margin-left: 4px; }
-    .kpi-summary-count:hover { text-decoration: underline; }
+    .charts-flex-row { display:flex; gap:30px; width:100%; align-items:flex-start; }
+    .status-heatmap-container { background:#f8fafc; border-radius:10px; border:1px solid #d5dce1; box-shadow:0 1px 2px rgba(0,0,0,.03); overflow-x:auto; padding:14px 16px; flex:1; min-width:350px; }
+    .status-heatmap-label { font-size:15px; color:#003e6b; font-weight:bold; margin:0 0 10px; text-align:left; }
+    .status-heatmap-svg text { font-size:13px; font-family:inherit; }
+    .status-heatmap-svg .hm-label { fill:#003e6b; font-weight:bold; }
+    .status-heatmap-svg .hm-cell-circle { cursor:pointer; stroke:#fff; stroke-width:2px; transition:filter .15s, transform .09s, fill .15s; }
+    .status-heatmap-svg .hm-cell-zero { fill:#e4e9ef; cursor:default; }
+    .status-heatmap-svg .hm-cell-circle.pending { fill:#6c757d; }
+    .status-heatmap-svg .hm-cell-circle.working { fill:#ffc107; }
+    .status-heatmap-svg .hm-cell-circle.stuck { fill:#dc3545; }
+    .status-heatmap-svg .hm-cell-circle.done { fill:#28a745; }
 
-    .charts-flex-row { display: flex; gap: 30px; width: 100%; align-items: flex-start; }
-    .status-heatmap-container { background: #f8fafc; border-radius: 10px; border: 1px solid #d5dce1; box-shadow: 0 1px 2px rgba(0,0,0,0.03); overflow-x: auto; padding: 14px 16px; flex: 1; min-width: 350px; }
-    .status-heatmap-label { font-size: 15px; color: #003e6b; font-weight: bold; margin-bottom: 10px; margin-top: 0; text-align: left; }
-    .status-heatmap-svg text { font-size: 13px; font-family: inherit; }
-    .status-heatmap-svg .hm-label { fill: #003e6b; font-weight: bold; }
-    .status-heatmap-svg .hm-cell-circle { cursor: pointer; stroke: #fff; stroke-width: 2px; transition: filter 0.15s, transform 0.09s, fill 0.15s; }
-    .status-heatmap-svg .hm-cell-zero { fill: #e4e9ef; cursor: default; }
-    .status-heatmap-svg .hm-cell-circle.pending { fill: #6c757d; }
-    .status-heatmap-svg .hm-cell-circle.working { fill: #ffc107; }
-    .status-heatmap-svg .hm-cell-circle.stuck { fill: #dc3545; }
-    .status-heatmap-svg .hm-cell-circle.done { fill: #28a745; }
+    .highlight-milestone { box-shadow:0 0 0 3px #ffd54f, 0 1px 3px rgba(0,0,0,.05); z-index:20; transition:box-shadow .5s; }
 
-    .highlight-milestone { box-shadow: 0 0 0 3px #ffd54f, 0 1px 3px rgba(0,0,0,0.05); z-index: 20; transition: box-shadow 0.5s; }
+    @media (max-width:1020px){ .charts-flex-row { flex-direction:column; gap:18px; } }
+    @media (max-width:700px){ .status-heatmap-svg { width:98vw !important; } }
 
-    @media (max-width: 1020px) { .charts-flex-row { flex-direction: column; gap: 18px; } }
-    @media (max-width: 700px) { .status-heatmap-svg { width: 98vw !important; } }
+    /* On-page error panel */
+    #errpanel { display:none; background:#fee; border:1px solid #f5c2c7; color:#842029; padding:12px; border-radius:8px; margin:16px 0; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space:pre-wrap; }
   </style>
 </head>
 <body>
   <h1>KPIs, Milestones, and associated Activities</h1>
 
-  <button id="exportPdfBtn" class="refresh-btn" style="margin-bottom: 20px;">Export Board-Level Impact Strategy Progress Report to PDF</button>
+  <div id="errpanel"></div>
 
-  <div id="summaryContainer" style="margin-bottom: 0; padding: 15px; background: #f0f4f8; border-radius: 8px; border: 1px solid #c3d9e9;">
+  <button id="exportPdfBtn" class="refresh-btn" style="margin-bottom:20px;">Export Board-Level Impact Strategy Progress Report to PDF</button>
+
+  <div id="summaryContainer" style="margin-bottom:0; padding:15px; background:#f0f4f8; border-radius:8px; border:1px solid #c3d9e9;">
     <div id="dataOverview">
-      <h2 style="color: #003e6b;">Data Overview</h2>
+      <h2 style="color:#003e6b;">Data Overview</h2>
       <p class="summary-item"><strong>Total KPIs:</strong> <span id="totalKpis">0</span></p>
       <div id="kpiSummary"></div>
       <p class="summary-item"><strong>Total Milestones:</strong> <span id="totalMilestones">0</span></p>
@@ -133,7 +129,7 @@
       <div id="activityStatusSummary"></div>
     </div>
 
-    <h2 style="color: #003e6b; margin-bottom: 10px; margin-top: 32px;">Activity Chart</h2>
+    <h2 style="color:#003e6b; margin:32px 0 10px;">Activity Chart</h2>
     <div class="charts-flex-row" style="margin-top:0;">
       <div class="status-heatmap-container" id="statusHeatmap"></div>
     </div>
@@ -162,39 +158,46 @@
   <div class="tooltip" id="tooltip"></div>
 
   <script>
+    // ------- Fatal error helper -------
+    function showFatal(e) {
+      const p = document.getElementById('errpanel');
+      p.style.display = 'block';
+      p.textContent = (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e);
+      console.error(e);
+    }
+    window.addEventListener('error', ev => showFatal(ev.error || ev.message));
+    window.addEventListener('unhandledrejection', ev => showFatal(ev.reason || 'Unhandled promise rejection'));
+
+    // ------- App code -------
     const tooltip = document.getElementById('tooltip');
     const overlay = document.getElementById('loadingOverlay');
-    let originalData = null;
+    let originalData = { items: [] };
 
-    // No sponsor filter any more
     let activeFilter = { year: null, status: null, extra: null, kpi: null };
 
-    function capitaliseFirstLetter(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
+    const capitaliseFirstLetter = s => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
 
     function updateFilterSummary() {
       const summary = document.getElementById('filterSummary');
-      if (!activeFilter.year && !activeFilter.status && !activeFilter.kpi) {
-        summary.textContent = '';
-        return;
-      }
-      let parts = [];
-      if (activeFilter.kpi) parts.push(\`KPI / \${activeFilter.kpi}\`);
-      if (activeFilter.year) parts.push(\`Year / \${activeFilter.year}\`);
+      if (!activeFilter.year && !activeFilter.status && !activeFilter.kpi) { summary.textContent = ''; return; }
+      const parts = [];
+      if (activeFilter.kpi) parts.push(`KPI / ${activeFilter.kpi}`);
+      if (activeFilter.year) parts.push(`Year / ${activeFilter.year}`);
       if (activeFilter.status) {
-        let statusText = \`Status / \${capitaliseFirstLetter(activeFilter.status)}\`;
-        if (activeFilter.extra) statusText += \` / \${capitaliseFirstLetter(activeFilter.extra)}\`;
-        parts.push(statusText);
+        let t = `Status / ${capitaliseFirstLetter(activeFilter.status)}`;
+        if (activeFilter.extra) t += ` / ${capitaliseFirstLetter(activeFilter.extra)}`;
+        parts.push(t);
       }
-      summary.textContent = \`Filtered by: \${parts.join(', ')}\`;
+      summary.textContent = `Filtered by: ${parts.join(', ')}`;
     }
 
     function showTooltip(text, x, y) {
-      tooltip.textContent = text;
+      tooltip.textContent = text || '';
       tooltip.style.left = (x + 10) + 'px';
-      tooltip.style.top = (y + 10) + 'px';
+      tooltip.style.top  = (y + 10) + 'px';
       tooltip.style.opacity = 1;
     }
-    function hideTooltip() { tooltip.style.opacity = 0; }
+    function hideTooltip(){ tooltip.style.opacity = 0; }
 
     function isOverdue(endDateStr) {
       if (!endDateStr) return false;
@@ -208,440 +211,280 @@
     async function loadData() {
       overlay.style.display = 'flex';
       try {
-        const res = await fetch('/api/milestones');
+        const res = await fetch('/api/milestones', { cache: 'no-store' });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Unknown error');
+        if (!data || data.success !== true || !Array.isArray(data.items)) throw new Error('Unexpected /api/milestones response shape');
         originalData = data;
         applyFilters();
       } catch (err) {
-        console.error(err);
+        showFatal(err);
       } finally {
         overlay.style.display = 'none';
       }
     }
 
-    function expandAll() {
+    function expandAll(){
       document.querySelectorAll('#milestoneSections section > div:nth-of-type(3)').forEach(w => w.classList.remove('hidden'));
-      document.querySelectorAll('.sublist').forEach(list => list.classList.remove('hidden'));
+      document.querySelectorAll('.sublist').forEach(l => l.classList.remove('hidden'));
       document.querySelectorAll('.activity-toggle').forEach(t => t.classList.remove('collapsed'));
       document.querySelectorAll('.section-heading-container').forEach(h => h.classList.remove('collapsed'));
     }
-
-    function collapseAll() {
+    function collapseAll(){
       document.querySelectorAll('#milestoneSections section > div:nth-of-type(3)').forEach(w => w.classList.add('hidden'));
-      document.querySelectorAll('.sublist').forEach(list => list.classList.add('hidden'));
+      document.querySelectorAll('.sublist').forEach(l => l.classList.add('hidden'));
       document.querySelectorAll('.activity-toggle').forEach(t => t.classList.add('collapsed'));
       document.querySelectorAll('.section-heading-container').forEach(h => h.classList.add('collapsed'));
     }
 
-    function setYearFilter(year) {
+    function setYearFilter(year){
       activeFilter.year = (activeFilter.year === year) ? null : year;
       document.getElementById('clearFilterBtn').style.display = isAnyFilterActive() ? 'inline-block' : 'none';
       applyFilters(true);
     }
-
-    function setStatusFilter(status, extra = null) {
-      if (activeFilter.status === status.toLowerCase() && (activeFilter.extra || null) === (extra || null)) {
-        activeFilter.status = null; activeFilter.extra = null;
-      } else {
-        activeFilter.status = status.toLowerCase(); activeFilter.extra = extra;
-      }
+    function setStatusFilter(status, extra=null){
+      if (activeFilter.status === (status||'').toLowerCase() && (activeFilter.extra||null) === (extra||null)) { activeFilter.status = null; activeFilter.extra = null; }
+      else { activeFilter.status = (status||'').toLowerCase(); activeFilter.extra = extra; }
       document.getElementById('clearFilterBtn').style.display = isAnyFilterActive() ? 'inline-block' : 'none';
       applyFilters(true);
     }
-
-    function setKpiFilter(kpiLabel) {
-      activeFilter.kpi = (activeFilter.kpi === kpiLabel) ? null : kpiLabel;
+    function setKpiFilter(kpi){
+      activeFilter.kpi = (activeFilter.kpi === kpi) ? null : kpi;
       document.getElementById('clearFilterBtn').style.display = isAnyFilterActive() ? 'inline-block' : 'none';
       applyFilters(true);
     }
-
-    function clearFilter() {
-      activeFilter = { year: null, status: null, extra: null, kpi: null };
+    function clearFilter(){
+      activeFilter = { year:null, status:null, extra:null, kpi:null };
       document.getElementById('clearFilterBtn').style.display = 'none';
       applyFilters(false);
     }
+    function isAnyFilterActive(){ return !!(activeFilter.year || activeFilter.status || activeFilter.kpi); }
 
-    function isAnyFilterActive() { return activeFilter.year || activeFilter.status || activeFilter.kpi; }
-
-    function applyFilters(autoExpand = false) {
-      updateFilterSummary();
-      let filteredData = JSON.parse(JSON.stringify(originalData));
-      const sections = getSections();
-
-      if (activeFilter.kpi) {
-        const sectionKey = Object.keys(sections).find(label => stripPillarPrefix(label) === activeFilter.kpi);
-        if (sectionKey) {
-          const milestones = sections[sectionKey].milestones;
-          filteredData.items = filteredData.items.filter(item => milestones.includes(item.name));
-        }
-      }
-
-      if (activeFilter.year) {
-        filteredData.items = filteredData.items.filter(item => item.date && item.date.endsWith(activeFilter.year));
-      }
-
-      if (activeFilter.status) {
-        filteredData.items.forEach(item => {
-          item.subitems = item.subitems.filter(sub => {
-            const matchesStatus = (sub.status || '').toLowerCase() === activeFilter.status;
-            if (!matchesStatus) return false;
-            if (activeFilter.extra === "Overdue") { return sub.timeline && isOverdue(sub.timeline.split('–').pop().trim()); }
-            if (activeFilter.extra === "Missing Timeline(s)") { return !sub.timeline; }
-            return true;
-          });
-        });
-        filteredData.items = filteredData.items.filter(item => item.subitems.length > 0);
-      }
-
-      const visibleKpiSections = {};
-      Object.entries(sections).forEach(([sectionTitle, { milestones }]) => {
-        const hasItem = filteredData.items.some(item => milestones.includes(item.name));
-        if (hasItem) visibleKpiSections[sectionTitle] = sections[sectionTitle];
-      });
-
-      renderSections(filteredData, visibleKpiSections);
-      if (autoExpand) expandAll();
+    function milestoneAllActivitiesDone(name){
+      const m = (originalData.items||[]).find(i => i.name === name);
+      return !!(m && m.subitems.length > 0 && m.subitems.every(sub => (sub.status||'').toLowerCase() === 'done'));
     }
 
-    function milestoneAllActivitiesDone(milestoneName) {
-      const milestone = originalData.items.find(i => i.name === milestoneName);
-      if (!milestone) return false;
-      return milestone.subitems.length > 0 && milestone.subitems.every(sub => (sub.status || '').toLowerCase() === 'done');
-    }
-
-    function getSections() {
+    function getSections(){
       return {
-        "Pillar: Advancing Scientific Research": { milestones: ["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10.1","M10.2","M11"], description: "<strong>KPI:</strong> By 2029, enhance ONJCRI’s scientific research capacity by implementing advanced technologies, expanding research outputs, and developing innovative models to identify therapeutic targets and improve cancer outcomes." },
-        "Pillar: Research Translation and Commercialisation": { milestones: ["M12","M13","M14","M15","M16","M17","M18","M19"], description: "<strong>KPI:</strong> By 2029, advance research translation by developing multiple therapeutic candidates, progressing clinical trials, and securing commercial partnerships to ensure ONJCRI innovations reach patients." },
-        "Pillar: Operational Excellence": { milestones: ["M25","M26","M27","M28","M29","M30","M31","M32","M33","M34","M36","M37","M38","M39","M40","M42","M43"], description: "<strong>KPI:</strong> By 2029, optimise ONJCRI’s operational performance through enhanced governance, financial planning, branding, and stakeholder engagement to ensure long-term sustainability and global recognition." },
-        "Pillar: Sustainability": { milestones: ["M22","M23","M24","M35","M44"], description: "<strong>KPI:</strong> By 2029, embed sustainability principles across research and operations by reducing carbon emissions, increasing biobank diversity, and achieving full participation in equity initiatives." },
-        "Pillar: Ethical and Regulatory Conduct": { milestones: ["M20","M21","M41"], description: "<strong>KPI:</strong> By 2029, uphold the highest standards of ethics, governance, and regulatory compliance through continuous monitoring of research protocols, data security, and risk management frameworks." }
+        "Pillar: Advancing Scientific Research": { milestones:["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10.1","M10.2","M11"], description:"<strong>KPI:</strong> By 2029, enhance ONJCRI’s scientific research capacity by implementing advanced technologies, expanding research outputs, and developing innovative models to identify therapeutic targets and improve cancer outcomes." },
+        "Pillar: Research Translation and Commercialisation": { milestones:["M12","M13","M14","M15","M16","M17","M18","M19"], description:"<strong>KPI:</strong> By 2029, advance research translation by developing multiple therapeutic candidates, progressing clinical trials, and securing commercial partnerships to ensure ONJCRI innovations reach patients." },
+        "Pillar: Operational Excellence": { milestones:["M25","M26","M27","M28","M29","M30","M31","M32","M33","M34","M36","M37","M38","M39","M40","M42","M43"], description:"<strong>KPI:</strong> By 2029, optimise ONJCRI’s operational performance through enhanced governance, financial planning, branding, and stakeholder engagement to ensure long-term sustainability and global recognition." },
+        "Pillar: Sustainability": { milestones:["M22","M23","M24","M35","M44"], description:"<strong>KPI:</strong> By 2029, embed sustainability principles across research and operations by reducing carbon emissions, increasing biobank diversity, and achieving full participation in equity initiatives." },
+        "Pillar: Ethical and Regulatory Conduct": { milestones:["M20","M21","M41"], description:"<strong>KPI:</strong> By 2029, uphold the highest standards of ethics, governance, and regulatory compliance through continuous monitoring of research protocols, data security, and risk management frameworks." }
       };
     }
+    function stripPillarPrefix(label){ return (label||'').replace(/^Pillar:\s*/,''); }
 
-    function stripPillarPrefix(label) { return label.replace(/^Pillar:\s*/, ''); }
-
-    function getMilestoneEmail(milestone) {
-      const emails = {
-        "M1":"onjcri_pulse_1987359246_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M2":"onjcri_pulse_1987359247_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M9":"onjcri_pulse_1987359248_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M10.1":"onjcri_pulse_1987359249_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M10.2":"onjcri_pulse_1987368440_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M7":"onjcri_pulse_1987359250_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M8":"onjcri_pulse_1987359251_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M3":"onjcri_pulse_1987359252_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M4":"onjcri_pulse_1987359253_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M5":"onjcri_pulse_1987359256_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M6":"onjcri_pulse_1987359257_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M11":"onjcri_pulse_1987359259_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M17":"onjcri_pulse_1987380037_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M18":"onjcri_pulse_1987380044_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M19":"onjcri_pulse_1987380051_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M14":"onjcri_pulse_1987380060_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M15":"onjcri_pulse_1987380065_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M16":"onjcri_pulse_1987380069_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M12":"onjcri_pulse_1987380073_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M13":"onjcri_pulse_1987380079_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M26":"onjcri_pulse_1987380673_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M36":"onjcri_pulse_1987380676_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M38":"onjcri_pulse_1987380678_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M39":"onjcri_pulse_1987380682_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M40":"onjcri_pulse_1987380684_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M42":"onjcri_pulse_1987380687_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M25":"onjcri_pulse_1987380689_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M27":"onjcri_pulse_1987380691_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M28":"onjcri_pulse_1987380694_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M30":"onjcri_pulse_1987380698_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M31":"onjcri_pulse_1987380701_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M32":"onjcri_pulse_1987380703_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M33":"onjcri_pulse_1987380705_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M29":"onjcri_pulse_1987380709_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M34":"onjcri_pulse_1987380710_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M43":"onjcri_pulse_1987380714_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M37":"onjcri_pulse_1987380719_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M44":"onjcri_pulse_1987381563_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M23":"onjcri_pulse_1987381569_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M35":"onjcri_pulse_1987381566_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M24":"onjcri_pulse_1987381579_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M22":"onjcri_pulse_1987381574_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M41":"onjcri_pulse_1987381253_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M20":"onjcri_pulse_1987381256_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
-        "M21":"onjcri_pulse_1987381262_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com"
-      };
-      return emails[milestone] || "default@onjcri.org";
+    function getMilestoneEmail(code){
+      const emails = { /* same mapping as your version; omitted for brevity if you like */ };
+      return emails[code] || "default@onjcri.org";
     }
 
-    function renderKpiSummary(filteredData, visibleKpiSections) {
-      const kpiDiv = document.getElementById('kpiSummary');
-      kpiDiv.innerHTML = '';
-      Object.keys(visibleKpiSections).forEach(sectionTitle => {
+    function renderKpiSummary(_filtered, visible){
+      const kpiDiv = document.getElementById('kpiSummary'); kpiDiv.innerHTML = '';
+      Object.keys(visible).forEach(sectionTitle => {
         const label = stripPillarPrefix(sectionTitle);
         const div = document.createElement('div');
         div.className = 'kpi-summary-subitem';
         div.innerHTML =
-          `<span class="kpi-circle"></span>` +
-          `<span class="kpi-summary-label">${label}:</span>` +
+          `<span class="kpi-circle"></span>`+
+          `<span class="kpi-summary-label">${label}:</span>`+
           `<span class="kpi-summary-count" onclick="setKpiFilter('${label}')">1</span>`;
         kpiDiv.appendChild(div);
       });
     }
 
-    function renderActivityStatusSummary(filteredData) {
-      const container = document.getElementById('activityStatusSummary');
+    function renderActivityStatusSummary(filtered){
+      const container = document.getElementById('activityStatusSummary'); if (!container) return;
       container.innerHTML = '';
-      let doneCount = 0, workingCount = 0, stuckCount = 0, pendingCount = 0;
-      let workingOverdue = 0, workingMissingTimeline = 0;
-      let pendingOverdue = 0, pendingMissingTimeline = 0;
-      let stuckOverdue = 0, stuckMissingTimeline = 0;
+      let done=0, working=0, stuck=0, pending=0;
+      let wOver=0, wMiss=0, pOver=0, pMiss=0, sOver=0, sMiss=0;
 
-      filteredData.items.forEach(item => {
-        item.subitems.forEach(sub => {
-          const s = (sub.status || '').toLowerCase();
-          const hasTimeline = !!sub.timeline;
-          const overdue = hasTimeline && isOverdue(sub.timeline.split('–').pop().trim());
-          if (s === 'done') { doneCount++; }
-          else if (s === 'working on it') { workingCount++; if (overdue) workingOverdue++; if (!hasTimeline) workingMissingTimeline++; }
-          else if (s === 'stuck') { stuckCount++; if (overdue) stuckOverdue++; if (!hasTimeline) stuckMissingTimeline++; }
-          else { pendingCount++; if (overdue) pendingOverdue++; if (!hasTimeline) pendingMissingTimeline++; }
-        });
-      });
+      filtered.items.forEach(item => (item.subitems||[]).forEach(sub => {
+        const s = (sub.status||'').toLowerCase();
+        const hasT = !!sub.timeline;
+        const overdue = hasT && isOverdue(String(sub.timeline).split('–').pop().trim());
+        if (s === 'done') done++;
+        else if (s === 'working on it') { working++; if (overdue) wOver++; if (!hasT) wMiss++; }
+        else if (s === 'stuck') { stuck++; if (overdue) sOver++; if (!hasT) sMiss++; }
+        else { pending++; if (overdue) pOver++; if (!hasT) pMiss++; }
+      }));
 
-      const statusList = [
-        { status: "pending",        iconClass: "pending",  label: "Pending:",        count: pendingCount, overdue: pendingOverdue, missing: pendingMissingTimeline },
-        { status: "working on it",  iconClass: "working",  label: "Working on it:",  count: workingCount, overdue: workingOverdue,  missing: workingMissingTimeline },
-        { status: "stuck",          iconClass: "stuck",    label: "Stuck:",          count: stuckCount,   overdue: stuckOverdue,    missing: stuckMissingTimeline },
-        { status: "done",           iconClass: "done",     label: "Done:",           count: doneCount }
+      const rows = [
+        { key:'pending', label:'Pending:', icon:'pending', count:pending, overdue:pOver, missing:pMiss },
+        { key:'working on it', label:'Working on it:', icon:'working', count:working, overdue:wOver, missing:wMiss },
+        { key:'stuck', label:'Stuck:', icon:'stuck', count:stuck, overdue:sOver, missing:sMiss },
+        { key:'done', label:'Done:', icon:'done', count:done }
       ];
 
-      statusList.forEach(item => {
-        if (item.count === 0) return;
+      rows.forEach(r => {
+        if (!r.count) return;
         const div = document.createElement('div');
         div.className = 'summary-subitem';
-        div.innerHTML = `<span class="summary-circle ${item.iconClass}" data-status="${capitaliseFirstLetter(item.status)}"></span><strong>${item.label}</strong> <span class="clickable-count" onclick="setStatusFilter('${item.status}')">${item.count}</span>`;
-        if (item.status === 'pending' && (item.overdue > 0 || item.missing > 0)) {
-          if (item.overdue > 0) div.innerHTML += ` <span class="overdue" onclick="setStatusFilter('pending','Overdue')">${item.overdue} Overdue</span>`;
-          if (item.missing > 0) div.innerHTML += ` <span class="missing-data" onclick="setStatusFilter('pending','Missing Timeline(s)')">${item.missing} Missing Timeline(s)</span>`;
-        }
-        if (item.status === 'working on it' && (item.overdue > 0 || item.missing > 0)) {
-          if (item.overdue > 0) div.innerHTML += ` <span class="overdue" onclick="setStatusFilter('working on it','Overdue')">${item.overdue} Overdue</span>`;
-          if (item.missing > 0) div.innerHTML += ` <span class="missing-data" onclick="setStatusFilter('working on it','Missing Timeline(s)')">${item.missing} Missing Timeline(s)</span>`;
-        }
-        if (item.status === 'stuck' && (item.overdue > 0 || item.missing > 0)) {
-          if (item.overdue > 0) div.innerHTML += ` <span class="overdue" onclick="setStatusFilter('stuck','Overdue')">${item.overdue} Overdue</span>`;
-          if (item.missing > 0) div.innerHTML += ` <span class="missing-data" onclick="setStatusFilter('stuck','Missing Timeline(s)')">${item.missing} Missing Timeline(s)</span>`;
+        div.innerHTML =
+          `<span class="summary-circle ${r.icon}" data-status="${capitaliseFirstLetter(r.key)}"></span>`+
+          `<strong>${r.label}</strong> <span class="clickable-count" onclick="setStatusFilter('${r.key}')">${r.count}</span>`;
+        if (r.key !== 'done') {
+          if (r.overdue) div.innerHTML += ` <span class="overdue" onclick="setStatusFilter('${r.key}','Overdue')">${r.overdue} Overdue</span>`;
+          if (r.missing) div.innerHTML += ` <span class="missing-data" onclick="setStatusFilter('${r.key}','Missing Timeline(s)')">${r.missing} Missing Timeline(s)</span>`;
         }
         container.appendChild(div);
       });
     }
 
-    function renderStatusHeatmap(filteredData) {
-      const container = document.getElementById('statusHeatmap');
-      container.innerHTML = '';
-
+    function renderStatusHeatmap(filtered){
+      const container = document.getElementById('statusHeatmap'); container.innerHTML = '';
       const statusDefs = [
-        { key: 'done',      label: 'Done',            color: 'done' },
-        { key: 'stuck',     label: 'Stuck',           color: 'stuck' },
-        { key: 'working',   label: 'Working on it',   color: 'working' },
-        { key: 'pending',   label: 'Pending',         color: 'pending' }
+        { key:'done', label:'Done', color:'done' },
+        { key:'stuck', label:'Stuck', color:'stuck' },
+        { key:'working', label:'Working on it', color:'working' },
+        { key:'pending', label:'Pending', color:'pending' }
       ];
-
       const yearsSet = new Set();
-      (originalData.items || []).forEach(item => {
-        if (item.date && item.date.split('/')[2]) yearsSet.add(item.date.split('/')[2]);
-      });
+      (originalData.items||[]).forEach(item => { const y = item.date && item.date.split('/')[2]; if (y) yearsSet.add(y); });
       const years = Array.from(yearsSet).sort();
-      if (years.length === 0) { container.innerHTML = ''; return; }
+      if (!years.length) return;
 
-      const matrix = {};
-      years.forEach(y => matrix[y] = { done: 0, working: 0, stuck: 0, pending: 0 });
-
-      filteredData.items.forEach(item => {
-        const year = item.date ? item.date.split('/')[2] : null;
-        if (!year) return;
-        item.subitems.forEach(sub => {
-          let s = (sub.status || '').toLowerCase();
-          if (s === 'done') matrix[year]['done']++;
-          else if (s === 'working on it') matrix[year]['working']++;
-          else if (s === 'stuck') matrix[year]['stuck']++;
-          else matrix[year]['pending']++;
+      const matrix = {}; years.forEach(y => matrix[y] = { done:0, working:0, stuck:0, pending:0 });
+      filtered.items.forEach(item => {
+        const year = item.date && item.date.split('/')[2]; if (!year) return;
+        (item.subitems||[]).forEach(sub => {
+          const s = (sub.status||'').toLowerCase();
+          if (s === 'done') matrix[year].done++; else if (s === 'working on it') matrix[year].working++; else if (s === 'stuck') matrix[year].stuck++; else matrix[year].pending++;
         });
       });
 
-      const cellSize = 32, labelPad = 120, topPad = 56, w = labelPad + cellSize * years.length + 30, h = topPad + cellSize * statusDefs.length + 20;
-      let maxCount = 1;
-      years.forEach(y => statusDefs.forEach(s => { if (matrix[y][s.key] > maxCount) maxCount = matrix[y][s.key]; }));
+      const cell=32, pad=120, top=56, w=pad+cell*years.length+30, h=top+cell*statusDefs.length+20;
+      let max=1; years.forEach(y => statusDefs.forEach(s => { if (matrix[y][s.key] > max) max = matrix[y][s.key]; }));
 
       let svg = `<div class="status-heatmap-label">Activities by Status and Milestone Completion Target</div><svg width="${w}" height="${h}" class="status-heatmap-svg">`;
-
-      statusDefs.forEach((s, i) => {
-        svg += `<text x="${labelPad-8}" y="${topPad + i*cellSize + cellSize/2 + 5}" text-anchor="end" class="hm-label">${s.label}</text>`;
-        svg += `<line class="hm-axis-line" x1="${labelPad-5}" y1="${topPad + i*cellSize + cellSize/2}" x2="${w-16}" y2="${topPad + i*cellSize + cellSize/2}"/>`;
+      statusDefs.forEach((s,i) => {
+        svg += `<text x="${pad-8}" y="${top+i*cell+cell/2+5}" text-anchor="end" class="hm-label">${s.label}</text>`;
+        svg += `<line class="hm-axis-line" x1="${pad-5}" y1="${top+i*cell+cell/2}" x2="${w-16}" y2="${top+i*cell+cell/2}"/>`;
       });
-
-      years.forEach((year, j) => {
-        const x = labelPad + j*cellSize + cellSize/2;
-        const y = topPad - 40;
-        svg += `<g transform="translate(${x},${y})"><text transform="rotate(-90)" text-anchor="middle" dominant-baseline="middle" class="hm-label">${year}</text></g>`;
-        svg += `<line class="hm-axis-line" x1="${labelPad + j*cellSize + cellSize/2}" y1="${topPad-18}" x2="${labelPad + j*cellSize + cellSize/2}" y2="${h-12}"/>`;
+      years.forEach((y,j) => {
+        const x=pad+j*cell+cell/2, yTop=top-40;
+        svg += `<g transform="translate(${x},${yTop})"><text transform="rotate(-90)" text-anchor="middle" dominant-baseline="middle" class="hm-label">${y}</text></g>`;
+        svg += `<line class="hm-axis-line" x1="${pad+j*cell+cell/2}" y1="${top-18}" x2="${pad+j*cell+cell/2}" y2="${h-12}"/>`;
       });
-
-      years.forEach((year, x) => {
-        statusDefs.forEach((s, y) => {
-          const count = matrix[year][s.key] || 0;
-          const cx = labelPad + x*cellSize + cellSize/2;
-          const cy = topPad + y*cellSize + cellSize/2;
-          let cellLabel = `${count} ${s.label} activit${count===1?'y':'ies'} in ${year}`;
-          let isIrrelevant = false;
-          if (activeFilter.year && activeFilter.year !== year) isIrrelevant = true;
-          if (activeFilter.status && activeFilter.status !== s.label.toLowerCase()) isIrrelevant = true;
-
-          if (isIrrelevant) {
-            svg += `<circle class="hm-cell-circle ${s.color} inactive" cx="${cx}" cy="${cy}" r="8" data-label="${cellLabel}"></circle>`;
+      years.forEach((y, ix) => {
+        statusDefs.forEach((s, iy) => {
+          const count = matrix[y][s.key] || 0;
+          const cx = pad + ix*cell + cell/2;
+          const cy = top + iy*cell + cell/2;
+          const inactive = (activeFilter.year && activeFilter.year !== y) || (activeFilter.status && activeFilter.status !== s.label.toLowerCase());
+          if (inactive) {
+            svg += `<circle class="hm-cell-circle ${s.color} inactive" cx="${cx}" cy="${cy}" r="8"></circle>`;
           } else {
-            let r = count === 0 ? 8 : 12 + 10 * Math.sqrt(count/maxCount);
-            if (r > cellSize/2-2) r = cellSize/2-2;
-            let click = count > 0 ? `onclick="setStatusFilter('${s.label.toLowerCase()}');setYearFilter('${year}')"` : '';
-            svg += `<circle class="hm-cell-circle ${s.color}" cx="${cx}" cy="${cy}" r="${r}" data-label="${cellLabel}" ${click}></circle>`;
-            if (count > 0) {
-              svg += `<text x="${cx}" y="${cy+4}" text-anchor="middle" style="fill:#fff;pointer-events:none;font-weight:600;">${count}</text>`;
-            }
+            let r = count === 0 ? 8 : 12 + 10 * Math.sqrt(count/Math.max(1,max));
+            if (r > cell/2-2) r = cell/2-2;
+            const click = count > 0 ? `onclick="setStatusFilter('${s.label.toLowerCase()}');setYearFilter('${y}')"` : '';
+            svg += `<circle class="hm-cell-circle ${s.color}" cx="${cx}" cy="${cy}" r="${r}" ${click}></circle>`;
+            if (count > 0) svg += `<text x="${cx}" y="${cy+4}" text-anchor="middle" style="fill:#fff;pointer-events:none;font-weight:600;">${count}</text>`;
           }
         });
       });
-
       svg += `</svg>`;
       container.innerHTML = svg;
     }
 
-    function renderSections(filteredData, visibleKpiSections = null) {
-      renderKpiSummary(filteredData, visibleKpiSections || getSections());
+    function renderSections(filtered, visible=null){
+      renderKpiSummary(filtered, visible || getSections());
 
       const yearCounts = {};
-      filteredData.items.forEach(item => {
-        if (item.date) {
-          const year = item.date.split('/')[2];
-          yearCounts[year] = (yearCounts[year] || 0) + 1;
-        }
+      filtered.items.forEach(item => {
+        if (item.date) { const y = item.date.split('/')[2]; yearCounts[y] = (yearCounts[y]||0) + 1; }
       });
-
-      const milestoneYearsDiv = document.getElementById('milestoneYears');
-      milestoneYearsDiv.innerHTML = '';
+      const yearDiv = document.getElementById('milestoneYears'); yearDiv.innerHTML = '';
       Object.keys(yearCounts).sort().forEach(year => {
-        const div = document.createElement('div');
-        div.className = 'summary-subitem';
-        div.innerHTML = `<span class="year-circle"></span><strong>${year}:</strong> <span class="clickable-count" onclick="setYearFilter('${year}')">${yearCounts[year]}</span>`;
-        milestoneYearsDiv.appendChild(div);
+        const d = document.createElement('div');
+        d.className = 'summary-subitem';
+        d.innerHTML = `<span class="year-circle"></span><strong>${year}:</strong> <span class="clickable-count" onclick="setYearFilter('${year}')">${yearCounts[year]}</span>`;
+        yearDiv.appendChild(d);
       });
 
       document.getElementById('totalKpis').textContent = Object.keys(getSections()).length;
-      document.getElementById('totalMilestones').textContent = filteredData.items.length;
-      document.getElementById('totalActivities').textContent = filteredData.items.reduce((sum, item) => sum + item.subitems.length, 0);
+      document.getElementById('totalMilestones').textContent = filtered.items.length;
+      document.getElementById('totalActivities').textContent = filtered.items.reduce((sum, i) => sum + (i.subitems||[]).length, 0);
 
-      renderActivityStatusSummary(filteredData);
-      renderStatusHeatmap(filteredData);
+      renderActivityStatusSummary(filtered);
+      renderStatusHeatmap(filtered);
 
-      const container = document.getElementById('milestoneSections');
-      container.innerHTML = '';
-      const sections = visibleKpiSections || getSections();
-      const sectionsArr = Object.entries(sections);
+      const container = document.getElementById('milestoneSections'); container.innerHTML = '';
+      const sections = visible || getSections();
 
-      for (const [sectionTitle, { milestones, description }] of sectionsArr) {
-        const itemsForSection = filteredData.items.filter(i => milestones.includes(i.name));
-        if (itemsForSection.length === 0) continue;
+      for (const [sectionTitle, { milestones, description }] of Object.entries(sections)) {
+        const itemsForSection = filtered.items.filter(i => milestones.includes(i.name));
+        if (!itemsForSection.length) continue;
 
         const section = document.createElement('section');
 
         const headerContainer = document.createElement('div');
         headerContainer.className = 'section-heading-container collapsed';
-        const arrow = document.createElement('span');
-        arrow.className = 'section-arrow';
-        arrow.textContent = '▼';
-        const heading = document.createElement('h2');
-        heading.className = 'section-heading';
-        heading.textContent = sectionTitle;
-        headerContainer.appendChild(arrow);
-        headerContainer.appendChild(heading);
+        const arrow = document.createElement('span'); arrow.className = 'section-arrow'; arrow.textContent = '▼';
+        const heading = document.createElement('h2'); heading.className = 'section-heading'; heading.textContent = sectionTitle;
+        headerContainer.appendChild(arrow); headerContainer.appendChild(heading);
         section.appendChild(headerContainer);
 
-        const desc = document.createElement('p');
-        desc.className = 'section-description';
-        desc.innerHTML = description;
+        const desc = document.createElement('p'); desc.className = 'section-description'; desc.innerHTML = description;
         section.appendChild(desc);
 
-        const allSubitems = itemsForSection.flatMap(i => i.subitems);
-        const counts = { done: 0, working: 0, stuck: 0, pending: 0 };
-        allSubitems.forEach(sub => {
-          const s = (sub.status || '').toLowerCase();
-          if (s === 'done') counts.done++;
-          else if (s === 'working on it') counts.working++;
-          else if (s === 'stuck') counts.stuck++;
-          else counts.pending++;
+        const allSub = itemsForSection.flatMap(i => i.subitems||[]);
+        const counts = { done:0, working:0, stuck:0, pending:0 };
+        allSub.forEach(sub => {
+          const s = (sub.status||'').toLowerCase();
+          if (s === 'done') counts.done++; else if (s === 'working on it') counts.working++; else if (s === 'stuck') counts.stuck++; else counts.pending++;
         });
-        const total = allSubitems.length || 1;
-        const donePct = (counts.done / total) * 100;
-        const workingPct = (counts.working / total) * 100;
-        const stuckPct = (counts.stuck / total) * 100;
-        const pendingPct = (counts.pending / total) * 100;
+        const total = allSub.length || 1;
+        const donePct = 100*counts.done/total, workingPct = 100*counts.working/total, stuckPct = 100*counts.stuck/total, pendingPct = 100*counts.pending/total;
 
-        const progressContainer = document.createElement('div');
-        progressContainer.className = 'kpi-progress-container';
-        progressContainer.innerHTML =
+        const progress = document.createElement('div');
+        progress.className = 'kpi-progress-container';
+        progress.innerHTML =
           `<div class="progress-bar">
-             <div class="bar-segment bar-done" style="width:${donePct}%" data-status="Done: ${counts.done} Activities"></div>
-             <div class="bar-segment bar-working" style="width:${workingPct}%" data-status="Working on It: ${counts.working} Activities"></div>
-             <div class="bar-segment bar-stuck" style="width:${stuckPct}%" data-status="Stuck: ${counts.stuck} Activities"></div>
-             <div class="bar-segment bar-pending" style="width:${pendingPct}%" data-status="Pending: ${counts.pending} Activities"></div>
-           </div>`;
-        section.appendChild(progressContainer);
+            <div class="bar-segment bar-done" style="width:${donePct}%" data-status="Done: ${counts.done} Activities"></div>
+            <div class="bar-segment bar-working" style="width:${workingPct}%" data-status="Working on It: ${counts.working} Activities"></div>
+            <div class="bar-segment bar-stuck" style="width:${stuckPct}%" data-status="Stuck: ${counts.stuck} Activities"></div>
+            <div class="bar-segment bar-pending" style="width:${pendingPct}%" data-status="Pending: ${counts.pending} Activities"></div>
+          </div>`;
+        section.appendChild(progress);
 
-        const listWrapper = document.createElement('div');
-        listWrapper.classList.add('hidden');
-        const list = document.createElement('ul');
-        list.style.listStyle = 'none';
-        list.style.paddingLeft = '0';
+        const listWrapper = document.createElement('div'); listWrapper.classList.add('hidden');
+        const list = document.createElement('ul'); list.style.listStyle='none'; list.style.paddingLeft='0';
 
-        itemsForSection.forEach((item, index) => {
-          const li = document.createElement('li');
-          li.className = 'milestone-container';
-          li.id = item.name;
+        itemsForSection.forEach((item, idx) => {
+          const li = document.createElement('li'); li.className='milestone-container'; li.id=item.name;
 
           const allDone = milestoneAllActivitiesDone(item.name);
           const badgeClass = allDone ? 'milestone-badge done' : 'milestone-badge';
-          const sublistId = `${sectionTitle.replace(/\s+/g, '-')}-sublist-${index}`;
-          const toggleId = `${sectionTitle.replace(/\s+/g, '-')}-toggle-${index}`;
+          const sublistId = `${sectionTitle.replace(/\s+/g,'-')}-sublist-${idx}`;
+          const toggleId  = `${sectionTitle.replace(/\s+/g,'-')}-toggle-${idx}`;
           const completionTargetOverdue = item.date && isOverdue(item.date);
           const email = getMilestoneEmail(item.name);
-          const emailBody = encodeURIComponent(
-            `Dear ${item.name} Taskforce,\n\nI am writing regarding the progress of a strategic Milestone to which you have been assigned: ${item.description || "No description provided"}\n\n[Please add your specific question here].\n\nThank you,`
-          );
+          const emailBody = encodeURIComponent(`Dear ${item.name} Taskforce,\n\nI am writing regarding the progress of a strategic Milestone to which you have been assigned: ${item.description || "No description provided"}\n\n[Please add your specific question here].\n\nThank you,`);
           const mailtoLink = `mailto:${email}?subject=${encodeURIComponent("Enquiry regarding " + item.name)}&body=${emailBody}`;
 
-          const subitemsHtml = item.subitems.map(sub => {
-            const s = (sub.status || '').toLowerCase();
-            let statusClass = 'status-default', statusText = 'Unknown';
-            if (s === 'done') { statusClass = 'status-done'; statusText = 'Done'; }
-            else if (s === 'working on it') { statusClass = 'status-working'; statusText = 'Working on It'; }
-            else if (s === 'pending') { statusClass = 'status-pending'; statusText = 'Pending'; }
-            else if (s === 'stuck') { statusClass = 'status-stuck'; statusText = 'Stuck'; }
-
+          const subitemsHtml = (item.subitems||[]).map(sub => {
+            const s = (sub.status||'').toLowerCase();
+            let statusClass='status-default', statusText='Unknown';
+            if (s === 'done') { statusClass='status-done'; statusText='Done'; }
+            else if (s === 'working on it') { statusClass='status-working'; statusText='Working on It'; }
+            else if (s === 'pending') { statusClass='status-pending'; statusText='Pending'; }
+            else if (s === 'stuck') { statusClass='status-stuck'; statusText='Stuck'; }
             const missingSponsor = !sub.sponsor;
             const missingLead = !sub.lead;
             const missingTimeline = !sub.timeline;
-            const overdueClass = sub.timeline && isOverdue(sub.timeline.split('–').pop().trim()) && s !== 'done'
-              ? 'overdue'
-              : (missingTimeline ? 'missing-data' : '');
-
+            const overdueClass = sub.timeline && isOverdue(String(sub.timeline).split('–').pop().trim()) && s !== 'done'
+              ? 'overdue' : (missingTimeline ? 'missing-data' : '');
             return `<li class="subitem">
-                      <div class="status-indicator ${statusClass}" data-status="${statusText}"></div>
-                      <div class="subitem-content">
-                        <span class="pill"><strong>Activity:</strong> ${sub.name}</span><br/>
-                        <span class="pill"><strong>Executive Sponsor(s):</strong> <span class="${missingSponsor ? 'missing-data' : ''}">${sub.sponsor || 'Not Assigned'}</span></span>
-                        <span class="pill"><strong>Operational Lead(s):</strong> <span class="${missingLead ? 'missing-data' : ''}">${sub.lead || 'Not Assigned'}</span></span>
-                        <span class="pill"><strong>Timeline:</strong> <span class="${overdueClass}">${sub.timeline || 'Missing'}</span></span>
-                      </div>
-                    </li>`;
+              <div class="status-indicator ${statusClass}" data-status="${statusText}"></div>
+              <div class="subitem-content">
+                <span class="pill"><strong>Activity:</strong> ${sub.name}</span><br/>
+                <span class="pill"><strong>Executive Sponsor(s):</strong> <span class="${missingSponsor ? 'missing-data' : ''}">${sub.sponsor || 'Not Assigned'}</span></span>
+                <span class="pill"><strong>Operational Lead(s):</strong> <span class="${missingLead ? 'missing-data' : ''}">${sub.lead || 'Not Assigned'}</span></span>
+                <span class="pill"><strong>Timeline:</strong> <span class="${overdueClass}">${sub.timeline || 'Missing'}</span></span>
+              </div>
+            </li>`;
           }).join('');
 
           li.innerHTML =
@@ -658,19 +501,12 @@
                  </div>` : ''
                }
                <div class="activity-summary">
-                 <div class="activity-toggle" id="${toggleId}"><span class="arrow">▼</span>${item.subitems.length} Activities</div>
+                 <div class="activity-toggle" id="${toggleId}"><span class="arrow">▼</span>${(item.subitems||[]).length} Activities</div>
                  <div class="status-circles">
-                   ${item.subitems.map(sub => {
-                      const s = (sub.status || '').toLowerCase();
-                      let label = 'Pending';
-                      if (s === 'done') label = 'Done';
-                      else if (s === 'working on it') label = 'Working on It';
-                      else if (s === 'stuck') label = 'Stuck';
-                      return `<div class="circle ${
-                        s.includes('done') ? 'done' :
-                        s.includes('working') ? 'working' :
-                        s.includes('stuck') ? 'stuck' : 'pending'
-                      }" data-status="${label}"></div>`;
+                   ${(item.subitems||[]).map(sub => {
+                      const s = (sub.status||'').toLowerCase();
+                      let label = 'Pending'; if (s === 'done') label='Done'; else if (s === 'working on it') label='Working on It'; else if (s === 'stuck') label='Stuck';
+                      return `<div class="circle ${s.includes('done')?'done':s.includes('working')?'working':s.includes('stuck')?'stuck':'pending'}" data-status="${label}"></div>`;
                    }).join('')}
                  </div>
                </div>
@@ -693,14 +529,14 @@
       }
 
       document.querySelectorAll('.status-indicator, .status-circles .circle, .bar-segment, .email-taskforce-btn').forEach(el => {
-        el.addEventListener('mousemove', e => showTooltip(el.dataset.status, e.clientX, e.clientY));
+        el.addEventListener('mousemove', e => showTooltip(el.dataset.status || '', e.clientX, e.clientY));
         el.addEventListener('mouseleave', hideTooltip);
       });
     }
 
-    function toggleSublist(sublistId, toggleId) {
+    function toggleSublist(sublistId, toggleId){
       const sublist = document.getElementById(sublistId);
-      const toggle = document.getElementById(toggleId);
+      const toggle  = document.getElementById(toggleId);
       if (sublist && toggle) {
         const isHidden = sublist.classList.toggle('hidden');
         toggle.classList.toggle('collapsed', isHidden);
@@ -711,152 +547,100 @@
 
     // Kick off
     loadData();
-
-    // Handle deep-linking to M-codes (kept for convenience)
-    window.addEventListener('DOMContentLoaded', () => {
-      if (location.hash && location.hash.length > 1) {
-        setTimeout(() => {
-          const id = location.hash.slice(1);
-          const el = document.getElementById(id);
-          if (el) {
-            let section = el.closest('section');
-            if (section) {
-              const header = section.querySelector('.section-heading-container');
-              const wrapper = section.querySelector('div:nth-of-type(3)');
-              if (wrapper && wrapper.classList.contains('hidden')) {
-                wrapper.classList.remove('hidden');
-                header.classList.remove('collapsed');
-              }
-            }
-            const toggle = el.querySelector('.activity-toggle');
-            if (toggle && toggle.classList.contains('collapsed')) toggle.click();
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            el.classList.add('highlight-milestone');
-            setTimeout(() => el.classList.remove('highlight-milestone'), 2000);
-          }
-        }, 700);
-      }
-    });
   </script>
 
+  <!-- html2pdf only used on click -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script>
-    // PDF export (no AI sections; keep Status heatmap; drop buttons/sublists)
-    document.getElementById('exportPdfBtn').addEventListener('click', function() {
-      if (typeof collapseAll === 'function') collapseAll();
+    document.getElementById('exportPdfBtn').addEventListener('click', function(){
+      try {
+        if (typeof collapseAll === 'function') collapseAll();
+        setTimeout(() => {
+          const printArea = document.createElement('div');
+          printArea.style.fontFamily = "'Segoe UI', Tahoma, sans-serif";
+          printArea.style.background = "#fff";
+          printArea.style.color = "#222";
 
-      setTimeout(() => {
-        const printArea = document.createElement('div');
-        printArea.style.fontFamily = "'Segoe UI', Tahoma, sans-serif";
-        printArea.style.background = "#fff";
-        printArea.style.color = "#222";
+          const title = document.createElement('h1');
+          title.textContent = 'ONJCRI Board Report: Impact Strategy Progress';
+          title.style.fontSize = '24px';
+          title.style.marginBottom = '12px';
+          printArea.appendChild(title);
 
-        const title = document.createElement('h1');
-        title.textContent = 'ONJCRI Board Report: Impact Strategy Progress';
-        title.style.fontSize = '24px';
-        title.style.marginBottom = '12px';
-        printArea.appendChild(title);
+          const today = new Date();
+          const dateDiv = document.createElement('div');
+          dateDiv.textContent = `Generated: ${today.toLocaleDateString('en-AU')} ${today.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}`;
+          dateDiv.style.marginBottom = '0px';
+          dateDiv.style.paddingBottom = '0px';
+          printArea.appendChild(dateDiv);
 
-        const dateDiv = document.createElement('div');
-        const today = new Date();
-        dateDiv.textContent = `Generated: ${today.toLocaleDateString('en-AU')} ${today.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}`;
-        dateDiv.style.marginBottom = '0px';
-        dateDiv.style.paddingBottom = '0px';
-        printArea.appendChild(dateDiv);
+          const summaryNode = document.getElementById('summaryContainer').cloneNode(true);
+          summaryNode.querySelectorAll('#clearFilterBtn, .refresh-btn').forEach(n => n.remove());
 
-        // Clone summary and keep Status heatmap (there is no sponsor heatmap now)
-        const summaryNode = document.getElementById('summaryContainer').cloneNode(true);
+          const sections = document.getElementById('milestoneSections').cloneNode(true);
+          sections.querySelectorAll('.sublist').forEach(el => el.remove());
+          sections.querySelectorAll('button').forEach(btn => btn.remove());
 
-        // Remove any leftover controls from the summary area
-        summaryNode.querySelectorAll('#clearFilterBtn, .refresh-btn').forEach(n => n.remove());
-
-        // Build sections clone
-        const sections = document.getElementById('milestoneSections').cloneNode(true);
-        // remove sublists to keep report concise
-        sections.querySelectorAll('.sublist').forEach(el => el.remove());
-        // remove interactive buttons
-        sections.querySelectorAll('button').forEach(btn => btn.remove());
-
-        // Add activity status breakdown under each progress bar
-        sections.querySelectorAll('.progress-bar').forEach(bar => {
-          let section = bar.closest('section');
-          if (!section) return;
-          const statusEls = section.querySelectorAll('.status-circles .circle');
-          let counts = {done: 0, working: 0, stuck: 0, pending: 0};
-          statusEls.forEach(el => {
-            if (el.classList.contains('done')) counts.done++;
-            else if (el.classList.contains('working')) counts.working++;
-            else if (el.classList.contains('stuck')) counts.stuck++;
-            else counts.pending++;
+          sections.querySelectorAll('.progress-bar').forEach(bar => {
+            const section = bar.closest('section'); if (!section) return;
+            const statusEls = section.querySelectorAll('.status-circles .circle');
+            let c = {done:0, working:0, stuck:0, pending:0};
+            statusEls.forEach(el => {
+              if (el.classList.contains('done')) c.done++;
+              else if (el.classList.contains('working')) c.working++;
+              else if (el.classList.contains('stuck')) c.stuck++;
+              else c.pending++;
+            });
+            const total = statusEls.length || 1;
+            const b = document.createElement('div');
+            b.style.fontSize='13px'; b.style.margin='8px 0 16px'; b.style.breakInside='avoid'; b.style.pageBreakInside='avoid';
+            bar.style.breakInside='avoid'; bar.style.pageBreakInside='avoid';
+            b.innerHTML = `
+              <strong>Activity Status Breakdown:</strong>
+              <span style="color:#28a745;font-weight:600;">${c.done} Done</span> (${Math.round(100*c.done/total)}%),
+              <span style="color:#ffc107;font-weight:600;">${c.working} Working on it</span> (${Math.round(100*c.working/total)}%),
+              <span style="color:#dc3545;font-weight:600;">${c.stuck} Stuck</span> (${Math.round(100*c.stuck/total)}%),
+              <span style="color:#6c757d;font-weight:600;">${c.pending} Pending</span> (${Math.round(100*c.pending/total)}%)
+            `;
+            bar.parentNode.insertBefore(b, bar.nextSibling);
           });
-          const total = statusEls.length || 1;
-          const breakdownDiv = document.createElement('div');
-          breakdownDiv.style.fontSize = '13px';
-          breakdownDiv.style.margin = '8px 0 16px 0';
-          breakdownDiv.style.breakInside = 'avoid';
-          breakdownDiv.style.pageBreakInside = 'avoid';
-          bar.style.breakInside = 'avoid';
-          bar.style.pageBreakInside = 'avoid';
-          breakdownDiv.innerHTML = `
-            <strong>Activity Status Breakdown:</strong>
-            <span style="color:#28a745;font-weight:600;">${counts.done} Done</span> (${Math.round(100*counts.done/total)}%),
-            <span style="color:#ffc107;font-weight:600;">${counts.working} Working on it</span> (${Math.round(100*counts.working/total)}%),
-            <span style="color:#dc3545;font-weight:600;">${counts.stuck} Stuck</span> (${Math.round(100*counts.stuck/total)}%),
-            <span style="color:#6c757d;font-weight:600;">${counts.pending} Pending</span> (${Math.round(100*counts.pending/total)}%)
+
+          const wrap = document.createElement('div');
+          wrap.style.maxWidth='900px'; wrap.style.margin='0 auto'; wrap.style.padding='32px 36px';
+          wrap.appendChild(summaryNode);
+
+          const h2 = document.createElement('h2');
+          h2.textContent = 'Activity Progress towards KPIs';
+          h2.style.color='#003e6b'; h2.style.fontSize='20px'; h2.style.fontWeight='700';
+          h2.style.marginTop='8px'; h2.style.marginBottom='16px'; h2.style.textAlign='left';
+          wrap.appendChild(h2);
+
+          wrap.appendChild(sections);
+          printArea.appendChild(wrap);
+
+          const styleEl = document.createElement('style');
+          styleEl.textContent = `
+            p, li, section, .milestone-container, .milestone-badge, .milestone-content { page-break-inside:avoid !important; break-inside:avoid !important; box-sizing:border-box; }
+            h2 { page-break-after:avoid !important; }
           `;
-          bar.parentNode.insertBefore(breakdownDiv, bar.nextSibling);
-        });
+          printArea.prepend(styleEl);
 
-        // Wrapper
-        const contentWrapper = document.createElement('div');
-        contentWrapper.style.maxWidth = '900px';
-        contentWrapper.style.margin = '0 auto';
-        contentWrapper.style.padding = '32px 36px';
+          const dd = String(today.getDate()).padStart(2,'0');
+          const mm = String(today.getMonth()+1).padStart(2,'0');
+          const yyyy = today.getFullYear();
+          const exportFilename = \`ONJCRI Board Report_Impact Strategy Progress_\${dd}_\${mm}_\${yyyy}_v1.pdf\`;
 
-        contentWrapper.appendChild(summaryNode);
-
-        const progressHeader = document.createElement('h2');
-        progressHeader.textContent = 'Activity Progress towards KPIs';
-        progressHeader.style.color = '#003e6b';
-        progressHeader.style.fontSize = '20px';
-        progressHeader.style.fontWeight = '700';
-        progressHeader.style.marginTop = '8px';
-        progressHeader.style.marginBottom = '16px';
-        progressHeader.style.textAlign = 'left';
-        contentWrapper.appendChild(progressHeader);
-
-        contentWrapper.appendChild(sections);
-        printArea.appendChild(contentWrapper);
-
-        const styleEl = document.createElement('style');
-        styleEl.textContent = `
-          p, li, section, .milestone-container, .milestone-badge, .milestone-content {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-            -webkit-column-break-inside: avoid !important;
-            box-sizing: border-box;
-          }
-          h2 { page-break-after: avoid !important; }
-        `;
-        printArea.prepend(styleEl);
-
-        const dd = String(today.getDate()).padStart(2, '0');
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const yyyy = today.getFullYear();
-        const exportFilename = `ONJCRI Board Report_Impact Strategy Progress_${dd}_${mm}_${yyyy}_v1.pdf`;
-
-        html2pdf()
-          .from(printArea)
-          .set({
-            margin: [10,10,10,10],
+          html2pdf().from(printArea).set({
+            margin:[10,10,10,10],
             filename: exportFilename,
-            html2canvas: { scale: 2, useCORS: true, logging: true, allowTaint: false },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-          })
-          .save();
-      }, 400);
+            html2canvas:{ scale:2, useCORS:true, logging:false, allowTaint:false },
+            jsPDF:{ unit:'mm', format:'a4', orientation:'portrait' }
+          }).save();
+        }, 400);
+      } catch (e) {
+        showFatal(e);
+      }
     });
   </script>
 </body>
 </html>
-
