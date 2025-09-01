@@ -8,8 +8,7 @@
     :root{--brand:#003e6b;--blue:#0066cc;--blue-dark:#004c99;--bg:#f7f9fb;--ink:#2b2b2b;--muted:#444;--line:#d9e1ea;--card:#ffffff;--chip:#f0f4f8;--shadow:0 1px 3px rgba(0,0,0,.05)}
     body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--ink);margin:0;padding:40px}
     h1{font-size:32px;font-weight:700;margin:0 0 16px;color:#103c60;border-bottom:2px solid var(--line);padding-bottom:10px}
-
-    .search-row{display:flex;gap:8px;align-items:center;margin:12px 0 6px}
+    .search-row{display:flex;gap:8px;align-items:center;margin:12px 0 18px}
     .search-input{flex:1;height:38px;border:2px solid #c8d6e5;border-radius:6px;padding:0 12px;font-size:14px;outline:none}
     .search-input:focus{border-color:var(--blue)}
     .btn{padding:10px 16px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.15);transition:background .15s,transform .05s}
@@ -17,12 +16,7 @@
     .btn:hover{background:var(--blue-dark)}
     .btn.secondary:hover{background:#4f5964}
     .btn:active{transform:scale(.98)}
-    .search-tip{font-size:12px;color:#777;margin:2px 0 18px}
-
-    .panel{background:#eef5ff;border:1px solid #cfe0ff;border-radius:10px;padding:12px 14px;margin:8px 0 18px}
-    .panel h3{margin:0 0 8px;color:#123a63;font-size:16px}
-    .panel small{color:#4d6b8a}
-
+    .search-tip{font-size:12px;color:#777;margin-top:4px}
     .refresh-container-top,.refresh-container{text-align:center;margin-top:16px}
     .refresh-btn{padding:10px 20px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:background .2s,transform .1s;margin:0 5px}
     .refresh-btn:hover{background:var(--blue-dark)}
@@ -75,35 +69,26 @@
     @keyframes pulseImpact{0%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.6}100%{transform:scale(1);opacity:1}}
     .tooltip{position:fixed;background:rgba(0,0,0,.8);color:#fff;padding:6px 10px;font-size:12px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s ease;z-index:1000}
 
-    .strategy-embed{margin-top:22px;background:#eef5ff;border:1px solid #cfe0ff;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    /* Strategy embed */
+    .strategy-embed{margin-top:28px;background:#eef5ff;border:1px solid #cfe0ff;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
     .strategy-embed header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer}
     .strategy-embed h2{font-size:18px;color:#123a63;margin:0}
     .strategy-controls{display:flex;gap:8px}
     .iframe-wrap{padding:0 14px 14px}
     .pdf-frame{width:100%;height:880px;border:1px solid #d5e3ff;border-radius:8px;background:#fff}
     @media (max-width:900px){.pdf-frame{height:70vh}}
-    .match{margin:4px 0 0 0;font-size:13px}
-    .match em{background:yellow;padding:0 2px}
   </style>
-  <!-- PDF.js (for extracting text from the PDF the proxy returns) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.js" integrity="sha512-xJk0g7T8bG3Vv3zX4o5c7sP3b8Zk9l2Y2u6JrC8wZq7Xxk7O04s0Xx6n4WQ5mG2A2b2c0mLkq2k8s3c6iP3s8Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
   <h1>KPIs, Milestones, and associated Activities</h1>
 
   <!-- Search -->
   <div class="search-row">
-    <input id="searchInput" class="search-input" type="text" placeholder="Search pillars, KPIs, milestones, activities, and the Strategy PDF…" />
+    <input id="searchInput" class="search-input" type="text" placeholder="Search pillars, KPIs, milestones, activities… (e.g., CRISPR, genomics, clinical trial)" />
     <button class="btn" id="btnSearch">Search</button>
     <button class="btn secondary" id="btnClear">Clear</button>
   </div>
   <div class="search-tip">Tip: try terms like <em>CRISPR</em>, <em>genomics</em>, <em>clinical trial</em>, etc.</div>
-
-  <!-- Strategy matches panel -->
-  <div id="pdfMatchesPanel" class="panel hidden">
-    <h3>Strategy matches</h3>
-    <div id="pdfMatchesBody"><small>Indexing PDF…</small></div>
-  </div>
 
   <div class="refresh-container-top">
     <button class="refresh-btn" onclick="expandAll()">Expand All</button>
@@ -120,7 +105,7 @@
     <button class="refresh-btn" onclick="loadData()">Refresh Data</button>
   </div>
 
-  <!-- Strategy PDF embed (optional viewer) -->
+  <!-- Strategy PDF embed (collapsible) -->
   <section class="strategy-embed" id="strategySection">
     <header id="strategyHeader">
       <h2>ONJCRI Impact Strategy (embedded PDF)</h2>
@@ -141,22 +126,12 @@
   <script>
     /* ===== Config ===== */
     const STRATEGY_PDF_URL = "https://www.onjcri.org.au/wp-content/uploads/2025/06/ONJCRI_Impact-Strategy_16-page_WEB.pdf";
-    const PDF_PROXY_ENDPOINT = "/api/pdf-proxy"; // you added this on the backend
 
     /* ===== Globals ===== */
     const tooltip = document.getElementById('tooltip');
     const overlay = document.getElementById('loadingOverlay');
     let originalData = null;
     let currentQuery = "";
-    let pdfIndex = null; // [{page, text}] once loaded
-    let pdfLoadError = null;
-
-    // PDF.js worker (CDN path derived automatically in v4+, but we set it to be safe)
-    if (window.pdfjsLib) {
-      try {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js";
-      } catch {}
-    }
 
     function showTooltip(text,x,y){tooltip.textContent=text;tooltip.style.left=(x+10)+'px';tooltip.style.top=(y+10)+'px';tooltip.style.opacity=1}
     function hideTooltip(){tooltip.style.opacity=0}
@@ -252,6 +227,7 @@
       return emails[m]||"default@onjcri.org";
     }
 
+    /* ---- search helpers ---- */
     function norm(s){return (s||"").toString().toLowerCase()}
     function highlight(text,q){if(!q||!text)return text||"";const esc=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');return text.replace(new RegExp(esc,'ig'),m=>`<mark>${m}</mark>`)}
     function itemMatchesQuery(item,q){if(!q)return true;const n=norm(q);return norm(item.name).includes(n)||norm(item.description).includes(n)||norm(item.portfolio).includes(n)||norm(item.date).includes(n)||item.subitems.some(s=>norm(s.name).includes(n)||norm(s.status).includes(n)||norm(s.timeline).includes(n)||norm(s.sponsor).includes(n)||norm(s.lead).includes(n))}
@@ -312,6 +288,7 @@
               </div></li>`;
           }).join('');
 
+          // email link (kept)
           const email = getMilestoneEmail(item.name);
           const emailBody = encodeURIComponent(`Dear ${item.name} Taskforce,\n\nI am writing regarding the progress of a strategic Milestone to which you have been assigned: ${item.description||"No description provided"}\n\n[Please add your specific question here].\n\nThank you,`);
           const mailto = `mailto:${email}?subject=${encodeURIComponent("Enquiry regarding "+item.name)}&body=${emailBody}`;
@@ -348,117 +325,38 @@
       });
     }
 
-    /* ===== Strategy PDF indexing & searching ===== */
-
-    const pdfMatchesPanel = document.getElementById('pdfMatchesPanel');
-    const pdfMatchesBody  = document.getElementById('pdfMatchesBody');
-
-    function showPdfPanel(){ pdfMatchesPanel.classList.remove('hidden'); }
-    function hidePdfPanel(){ pdfMatchesPanel.classList.add('hidden'); }
-
-    async function ensurePdfIndexed(){
-      if (pdfIndex || pdfLoadError) return;
-      showPdfPanel();
-      pdfMatchesBody.innerHTML = "<small>Indexing Strategy PDF…</small>";
-      try {
-        const proxied = `${PDF_PROXY_ENDPOINT}?url=${encodeURIComponent(STRATEGY_PDF_URL)}`;
-        const resp = await fetch(proxied);
-        if (!resp.ok) throw new Error("Proxy fetch failed");
-
-        const ab = await resp.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
-
-        const pages = [];
-        for (let p = 1; p <= pdf.numPages; p++) {
-          const page = await pdf.getPage(p);
-          const content = await page.getTextContent();
-          const text = content.items.map(i => i.str).join(" ");
-          pages.push({ page: p, text });
-        }
-        pdfIndex = pages; // cache
-        pdfMatchesBody.innerHTML = "<small>Ready. Use the search box above.</small>";
-      } catch (err) {
-        console.error(err);
-        pdfLoadError = err.message || "Unable to read the Strategy PDF.";
-        pdfMatchesBody.innerHTML = `<small>Unable to read the Strategy PDF (likely blocked or proxy not deployed). You can still <a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">open it in a new tab</a>.</small>`;
-      }
-    }
-
-    function searchPdf(query){
-      if (!query) { pdfMatchesBody.innerHTML = "<small>Enter a search term to see Strategy matches.</small>"; return; }
-      if (pdfLoadError){
-        pdfMatchesBody.innerHTML = `<small>Cannot search the PDF right now. <a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">Open PDF</a></small>`;
-        return;
-      }
-      if (!pdfIndex){
-        pdfMatchesBody.innerHTML = "<small>Indexing Strategy PDF…</small>";
-        return;
-      }
-      const n = query.toLowerCase();
-      const hits = [];
-      for (const pg of pdfIndex){
-        const i = pg.text.toLowerCase().indexOf(n);
-        if (i >= 0){
-          const start = Math.max(0, i - 40);
-          const end   = Math.min(pg.text.length, i + query.length + 40);
-          const snippet = pg.text.slice(start, end);
-          hits.push({page: pg.page, snippet});
-        }
-      }
-      if (hits.length === 0){
-        pdfMatchesBody.innerHTML = "<small>No matches in Strategy.</small>";
-        return;
-      }
-      const list = document.createElement('div');
-      hits.slice(0, 12).forEach(h => {
-        const url = `${STRATEGY_PDF_URL}#page=${h.page}&search=${encodeURIComponent(query)}`;
-        const safe = h.snippet.replace(/[&<>]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[s]));
-        const hi = safe.replace(new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'ig'), m => `<em>${m}</em>`);
-        const div = document.createElement('div');
-        div.className = "match";
-        div.innerHTML = `Page ${h.page}: ${hi} &nbsp; <a href="${url}" target="_blank" rel="noopener">open</a>`;
-        list.appendChild(div);
-      });
-      pdfMatchesBody.innerHTML = "";
-      pdfMatchesBody.appendChild(list);
-    }
-
-    /* ===== Data search UI (now also triggers PDF search) ===== */
+    /* ===== Data search UI ===== */
     async function runSearch(){
       const q=document.getElementById('searchInput').value.trim();
       currentQuery=q;
       const data=filteredDataByQuery(originalData,q);
       renderSections(data,q);
       expandAll();
-
-      // PDF
-      showPdfPanel();
-      await ensurePdfIndexed();
-      searchPdf(q);
     }
     function clearSearch(){
       const inp=document.getElementById('searchInput');inp.value='';
       currentQuery='';
       renderSections(originalData,'');
       collapseAll();
-      showPdfPanel();
-      pdfMatchesBody.innerHTML = "<small>Enter a search term to see Strategy matches.</small>";
     }
     document.getElementById('btnSearch').addEventListener('click', runSearch);
     document.getElementById('btnClear').addEventListener('click', clearSearch);
     document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter') runSearch()});
 
-    /* ===== Strategy viewer (embed) ===== */
+    /* ===== Strategy PDF embed controls ===== */
     const pdfFrame = document.getElementById('pdfFrame');
     const openPdfBtn = document.getElementById('openPdfBtn');
     const reloadBtn  = document.getElementById('reloadPdfBtn');
     const pdfSrc = STRATEGY_PDF_URL + "#toolbar=1&view=FitH";
+
     function loadPdf(){ pdfFrame.src = pdfSrc; openPdfBtn.href = STRATEGY_PDF_URL; }
     reloadBtn.addEventListener('click', loadPdf);
 
+    // simple collapse/expand for the embed section
     const strategyHeader = document.getElementById('strategyHeader');
     const strategyBody   = document.getElementById('strategyBody');
     strategyHeader.addEventListener('click', (e)=>{
+      // ignore clicks on buttons/links inside header
       if(e.target.closest('a') || e.target.closest('button')) return;
       strategyBody.classList.toggle('hidden');
     });
@@ -466,8 +364,6 @@
     // Init
     loadPdf();
     loadData();
-    // Pre-warm the PDF index in the background so first search feels instant
-    ensurePdfIndexed();
   </script>
 </body>
 </html>
