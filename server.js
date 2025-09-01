@@ -3,6 +3,9 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 
+// If your Node version is < 18, uncomment the next line and add node-fetch to dependencies:
+// const fetch = (...args) => import('node-fetch').then(m => m.default(...args));
+
 const app = express();
 
 /* -------------------- Config -------------------- */
@@ -10,6 +13,9 @@ const PORT = process.env.PORT || 10000;
 const MONDAY_API_URL = 'https://api.monday.com/v2';
 const MONDAY_API_KEY = process.env.MONDAY_API_KEY;
 const MAIN_BOARD_ID = process.env.MAIN_BOARD_ID;
+
+// For CORS: set this to the SharePoint origin when embedding, e.g.
+// https://onjcri.sharepoint.com  (or leave "*" during testing)
 const SHAREPOINT_ORIGIN = process.env.SHAREPOINT_ORIGIN || '*';
 
 /* -------------------- Middleware -------------------- */
@@ -130,6 +136,36 @@ app.get('/api/milestones', async (_req, res) => {
   } catch (err) {
     console.error('[/api/milestones] Error:', err.message);
     res.status(500).json({ success: false, error: 'Failed to load milestones' });
+  }
+});
+
+/**
+ * PDF proxy for Strategy search (lets the browser read PDF bytes safely).
+ * Usage from the client:
+ *   GET /api/pdf-proxy?url=<encoded-public-pdf-url>
+ */
+app.get('/api/pdf-proxy', async (req, res) => {
+  try {
+    const { url } = req.query;
+    if (!url) return res.status(400).json({ error: 'Missing ?url' });
+
+    const upstream = await fetch(url);
+    if (!upstream.ok) {
+      return res.status(upstream.status).send('Upstream PDF fetch failed');
+    }
+
+    // Buffer the PDF and send it with permissive CORS for our app
+    const arrayBuf = await upstream.arrayBuffer();
+    res.setHeader('Content-Type', upstream.headers.get('content-type') || 'application/pdf');
+    // cache for an hour (optional)
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    // allow your front-end origin to read the bytes
+    res.setHeader('Access-Control-Allow-Origin', SHAREPOINT_ORIGIN === '*' ? '*' : SHAREPOINT_ORIGIN);
+
+    res.send(Buffer.from(arrayBuf));
+  } catch (err) {
+    console.error('[/api/pdf-proxy] Error:', err.message);
+    res.status(500).send('Proxy error');
   }
 });
 
