@@ -5,294 +5,200 @@
   <title>KPIs, Milestones, and associated Activities</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root{
-      --primary:#0066cc;
-      --primary-dark:#004c99;
-      --ink:#2b2b2b;
-      --bg:#f7f9fb;
-      --card:#ffffff;
-      --muted:#6b7280;
-      --line:#d9e1ea;
-      --pill:#f0f4f8;
-      --done:#28a745; --work:#ffc107; --stuck:#dc3545; --pend:#6c757d;
-    }
-    *{box-sizing:border-box}
-    body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--ink);margin:0;padding:28px 16px 40px}
-    h1{font-size:28px;font-weight:700;margin:0 0 16px;color:#103c60;border-bottom:2px solid var(--line);padding-bottom:10px}
+    :root{--brand:#003e6b;--blue:#0066cc;--blue-dark:#004c99;--bg:#f7f9fb;--ink:#2b2b2b;--muted:#444;--line:#d9e1ea;--card:#ffffff;--chip:#f0f4f8;--shadow:0 1px 3px rgba(0,0,0,.05)}
+    body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--ink);margin:0;padding:40px}
+    h1{font-size:32px;font-weight:700;margin:0 0 16px;color:#103c60;border-bottom:2px solid var(--line);padding-bottom:10px}
 
-    /* Search bar */
-    .search-row{display:flex;gap:8px;align-items:center;margin:8px 0 10px}
-    .search-input{flex:1;height:44px;border:2px solid var(--primary);border-radius:6px;padding:0 12px;font-size:15px}
-    .btn{height:44px;padding:0 14px;border:none;border-radius:6px;background:var(--primary);color:#fff;font-weight:600;cursor:pointer}
-    .btn:hover{background:var(--primary-dark)}
-    .btn-secondary{background:#e5e7eb;color:#111827}
-    .btn-secondary:hover{background:#d1d5db}
-    .tip{font-size:12px;color:#6b7280;margin:2px 0 12px}
-    .btn-compact{height:36px}
+    .search-row{display:flex;gap:8px;align-items:center;margin:12px 0 6px}
+    .search-input{flex:1;height:38px;border:2px solid #c8d6e5;border-radius:6px;padding:0 12px;font-size:14px;outline:none}
+    .search-input:focus{border-color:var(--blue)}
+    .btn{padding:10px 16px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.15);transition:background .15s,transform .05s}
+    .btn.secondary{background:#6b7785}
+    .btn:hover{background:var(--blue-dark)}
+    .btn.secondary:hover{background:#4f5964}
+    .btn:active{transform:scale(.98)}
+    .search-tip{font-size:12px;color:#777;margin:2px 0 18px}
 
-    /* Strategy matches panel */
-    .pdf-box{background:#eef6ff;border:1px solid #cde1ff;border-radius:8px;padding:12px 14px;margin:10px 0 18px}
-    .pdf-title{font-weight:700;color:#123a63;margin-bottom:6px}
-    .pdf-hits{list-style:none;margin:8px 0 0;padding:0}
-    .pdf-hit{font-size:14px;color:#1f2937;margin:6px 0}
-    .pdf-open{margin-top:8px;font-size:13px}
-    mark{background:#fff3a3;border-radius:2px;padding:0 2px}
+    .panel{background:#eef5ff;border:1px solid #cfe0ff;border-radius:10px;padding:12px 14px;margin:8px 0 18px}
+    .panel h3{margin:0 0 8px;color:#123a63;font-size:16px}
+    .panel small{color:#4d6b8a}
 
-    /* Top/bottom controls */
-    .controls{display:flex;gap:8px;justify-content:flex-end;margin:6px 0 14px}
-    .refresh-btn{padding:10px 16px;background:var(--primary);color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer}
-    .refresh-btn:hover{background:var(--primary-dark)}
+    .refresh-container-top,.refresh-container{text-align:center;margin-top:16px}
+    .refresh-btn{padding:10px 20px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:background .2s,transform .1s;margin:0 5px}
+    .refresh-btn:hover{background:var(--blue-dark)}
+    .refresh-btn:active{transform:scale(.98)}
 
-    /* Section headers (KPI pillars) */
-    .section-heading-container{display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:22px;padding-left:10px;border-left:5px solid #003e6b}
-    h2.section-heading{font-size:18px;margin:0;color:#003e6b}
-    .section-arrow{font-size:14px;transition:transform .3s ease;color:#003e6b}
+    .section-heading-container{display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:28px;padding-left:10px;border-left:5px solid var(--brand)}
+    h2.section-heading{font-size:20px;margin:0;color:var(--brand)}
+    .section-arrow{font-size:16px;transition:transform .3s ease;color:var(--brand)}
     .collapsed .section-arrow{transform:rotate(-90deg)}
-    .section-description{font-size:13px;color:#444;margin:8px 0 10px 6px;font-style:italic}
+    .section-description{font-size:14px;color:var(--muted);margin:8px 0 12px 6px;font-style:italic;max-width:100%}
 
-    /* KPI progress bars */
-    .kpi-progress-container{margin:8px 0 14px 6px}
-    .progress-bar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:#e5e7eb;width:100%}
-    .bar-segment{height:100%}
-    .bar-done{background:var(--done)} .bar-working{background:var(--work)}
-    .bar-stuck{background:var(--stuck)} .bar-pending{background:var(--pend)}
+    .kpi-progress-container{margin:10px 0 20px 6px;position:relative}
+    .progress-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:#e0e0e0;width:100%}
+    .bar-segment{height:100%;position:relative;cursor:pointer;transition:transform .2s ease}
+    .bar-done{background:#28a745}.bar-working{background:#ffc107}.bar-stuck{background:#dc3545}.bar-pending{background:#6c757d}
 
-    /* Milestone cards */
-    ul{margin:0;padding:0}
-    li.milestone-container{display:flex;position:relative;background:var(--card);border:1px solid #e0e4e8;border-radius:10px;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-    .milestone-badge{flex-shrink:0;width:44px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#003e6b;background:var(--pill);border-right:2px solid #d1d9e0;border-radius:8px 0 0 8px;writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);font-size:13px;letter-spacing:.5px}
-    .milestone-badge.done{background:var(--done);color:#fff}
-    .milestone-content{flex:1;padding-left:12px;display:flex;flex-direction:column}
-    .milestone-header{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
-    .description{font-style:italic;font-size:13px;color:#555;flex:1}
-    .metadata-line{font-size:12px;margin-top:4px;padding:6px 0;color:#333;display:flex;flex-wrap:wrap;gap:16px}
+    li.milestone-container{display:flex;position:relative;background:var(--card);border:1px solid #e0e4e8;border-radius:10px;padding:16px 18px;margin-bottom:16px;box-shadow:var(--shadow)}
+    .milestone-badge{flex-shrink:0;width:50px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--brand);background:var(--chip);border-right:2px solid #d1d9e0;border-radius:8px 0 0 8px;box-shadow:inset -2px 0 5px rgba(0,0,0,.05);writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);font-size:14px;letter-spacing:1px;transition:background .3s,color .3s}
+    .milestone-badge.done{background:#28a745!important;color:#fff!important}
+    .milestone-content{flex:1;padding-left:14px;display:flex;flex-direction:column}
+    .milestone-header{display:flex;flex-direction:row;align-items:flex-start;justify-content:space-between;margin-bottom:6px;width:100%;gap:10px}
+    .description{font-style:italic;font-size:14px;color:#555;white-space:normal;flex:1}
+    .metadata-line{font-size:13px;margin-top:8px;padding:6px 0;color:#333;display:flex;flex-wrap:wrap;gap:20px}
     .metadata-line strong{font-weight:600;margin-right:4px}
-
-    .activity-summary{display:flex;align-items:center;justify-content:space-between;margin:6px 0 8px}
-    .activity-toggle{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--primary);cursor:pointer}
+    .activity-summary{display:flex;align-items:center;justify-content:space-between;margin:8px 0 10px 0}
+    .activity-toggle{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--blue);cursor:pointer;user-select:none}
     .activity-toggle:hover{text-decoration:underline}
     .arrow{display:inline-block;transition:transform .3s ease}
     .collapsed .arrow{transform:rotate(-90deg)}
     .status-circles{display:flex;gap:4px}
-    .circle{width:10px;height:10px;border-radius:50%}
-    .circle.done{background:var(--done)}
-    .circle.working{background:var(--work)}
-    .circle.stuck{background:var(--stuck)}
-    .circle.pending{background:var(--pend)}
-
-    .sublist{margin-top:8px;list-style:none;padding-left:0}
-    .subitem{padding:12px;border:1px solid #d5dce1;border-radius:10px;margin-bottom:8px;font-size:13px;background:#f8fafc;display:flex;align-items:center;gap:10px}
-    .status-indicator{width:14px;height:14px;border-radius:50%}
-    .status-done{background:var(--done)}
-    .status-working{background:var(--work)}
-    .status-pending{background:var(--pend)}
-    .status-stuck{background:var(--stuck)}
-    .status-default{background:#d5dce1}
+    .circle{width:12px;height:12px;border-radius:50%;cursor:pointer;transition:transform .2s ease}
+    .circle:hover{animation:pulse 1.5s infinite}
+    .circle.done{background:#28a745}.circle.working{background:#ffc107}.circle.stuck{background:#dc3545}.circle.pending{background:#6c757d}
+    .sublist{margin-top:10px;list-style:none;padding-left:0}
+    .subitem{padding:14px 16px;border:1px solid #d5dce1;border-radius:10px;margin-bottom:10px;font-size:14px;box-shadow:0 1px 2px rgba(0,0,0,.04);background:#f8fafc;display:flex;align-items:center;gap:10px}
+    .status-indicator{width:16px;height:16px;border-radius:50%;flex-shrink:0;cursor:pointer}
+    .status-indicator:hover{animation:pulse 1.5s infinite}
+    @keyframes pulse{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(0,0,0,.2)}50%{transform:scale(1.2);box-shadow:0 0 6px rgba(0,0,0,.2)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(0,0,0,.2)}}
     .subitem-content{flex:1}
-    .pill{display:inline-block;font-size:12px;margin-top:4px;margin-right:12px}
-    .overdue{color:#fff;background:var(--stuck);border-radius:4px;padding:1px 4px}
-    .missing-data{color:#fff;background:var(--work);border-radius:4px;padding:1px 4px}
-
-    .email-taskforce-btn{padding:6px 10px;font-size:12px;background:var(--primary);color:#fff;border:none;border-radius:4px;cursor:pointer;white-space:nowrap}
-    .email-taskforce-btn:hover{background:var(--primary-dark)}
-
+    .pill{display:inline-block;font-size:13px;margin-top:6px;margin-right:12px;padding:0;background:transparent;color:inherit}
+    .pill strong{font-weight:600;margin-right:4px}
+    .overdue{color:#fff;font-weight:600;background:#dc3545;border-radius:4px;padding:1px 4px;cursor:pointer}
+    .missing-data{color:#fff;font-weight:600;background:#ffc107;border-radius:4px;padding:1px 4px;cursor:pointer}
+    .status-done{background:#28a745}.status-working{background:#ffc107}.status-pending{background:#6c757d}.status-stuck{background:#dc3545}.status-default{background:#d5dce1}
+    .email-taskforce-btn{padding:6px 12px;font-size:12px;background:var(--blue);color:#fff;border:none;border-radius:4px;cursor:pointer;white-space:nowrap}
+    .email-taskforce-btn:hover{background:var(--blue-dark)}
     .hidden{display:none}
+    #loadingOverlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:bold;text-align:center;padding:20px}
+    .pulse-word{animation:pulseImpact 1.5s infinite;color:#28a745}
+    @keyframes pulseImpact{0%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.6}100%{transform:scale(1);opacity:1}}
+    .tooltip{position:fixed;background:rgba(0,0,0,.8);color:#fff;padding:6px 10px;font-size:12px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s ease;z-index:1000}
 
-    /* Overlay */
-    #loadingOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;text-align:center;padding:20px}
-    .pulse-word{animation:pulse 1.5s infinite;color:var(--done)}
-    @keyframes pulse{0%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:.7}100%{transform:scale(1);opacity:1}}
-
-    /* Responsive */
-    @media (max-width:700px){
-      .milestone-badge{width:40px}
-      .metadata-line{gap:10px}
-    }
+    .strategy-embed{margin-top:22px;background:#eef5ff;border:1px solid #cfe0ff;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    .strategy-embed header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer}
+    .strategy-embed h2{font-size:18px;color:#123a63;margin:0}
+    .strategy-controls{display:flex;gap:8px}
+    .iframe-wrap{padding:0 14px 14px}
+    .pdf-frame{width:100%;height:880px;border:1px solid #d5e3ff;border-radius:8px;background:#fff}
+    @media (max-width:900px){.pdf-frame{height:70vh}}
+    .match{margin:4px 0 0 0;font-size:13px}
+    .match em{background:yellow;padding:0 2px}
   </style>
+  <!-- PDF.js (for extracting text from the PDF the proxy returns) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.js" integrity="sha512-xJk0g7T8bG3Vv3zX4o5c7sP3b8Zk9l2Y2u6JrC8wZq7Xxk7O04s0Xx6n4WQ5mG2A2b2c0mLkq2k8s3c6iP3s8Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
   <h1>KPIs, Milestones, and associated Activities</h1>
 
   <!-- Search -->
   <div class="search-row">
-    <input id="searchInput" class="search-input" type="text" placeholder="Search pillars, KPIs, milestones, activities…" />
-    <button id="searchBtn" class="btn">Search</button>
-    <button id="clearBtn" class="btn btn-secondary">Clear</button>
+    <input id="searchInput" class="search-input" type="text" placeholder="Search pillars, KPIs, milestones, activities, and the Strategy PDF…" />
+    <button class="btn" id="btnSearch">Search</button>
+    <button class="btn secondary" id="btnClear">Clear</button>
   </div>
-  <div class="tip">Tip: try terms like <em>CRISPR</em>, <em>genomics</em>, <em>clinical trial</em>, etc.</div>
+  <div class="search-tip">Tip: try terms like <em>CRISPR</em>, <em>genomics</em>, <em>clinical trial</em>, etc.</div>
 
-  <!-- Strategy matches -->
-  <div id="strategyMatches" class="pdf-box"></div>
+  <!-- Strategy matches panel -->
+  <div id="pdfMatchesPanel" class="panel hidden">
+    <h3>Strategy matches</h3>
+    <div id="pdfMatchesBody"><small>Indexing PDF…</small></div>
+  </div>
 
-  <!-- Top controls -->
-  <div class="controls">
-    <button class="refresh-btn btn-compact" onclick="expandAll()">Expand All</button>
-    <button class="refresh-btn btn-compact" onclick="collapseAll()">Collapse All</button>
-    <button class="refresh-btn btn-compact" onclick="loadData()">Refresh Data</button>
+  <div class="refresh-container-top">
+    <button class="refresh-btn" onclick="expandAll()">Expand All</button>
+    <button class="refresh-btn" onclick="collapseAll()">Collapse All</button>
+    <button class="refresh-btn" onclick="loadData()">Refresh Data</button>
   </div>
 
   <!-- CORE DATA ONLY -->
   <div id="milestoneSections"></div>
 
-  <!-- Bottom controls -->
-  <div class="controls">
-    <button class="refresh-btn btn-compact" onclick="expandAll()">Expand All</button>
-    <button class="refresh-btn btn-compact" onclick="collapseAll()">Collapse All</button>
-    <button class="refresh-btn btn-compact" onclick="loadData()">Refresh Data</button>
+  <div class="refresh-container">
+    <button class="refresh-btn" onclick="expandAll()">Expand All</button>
+    <button class="refresh-btn" onclick="collapseAll()">Collapse All</button>
+    <button class="refresh-btn" onclick="loadData()">Refresh Data</button>
   </div>
 
-  <div id="loadingOverlay">Gathering <span class="pulse-word">IMPACT</span> data from ONJCRI…</div>
+  <!-- Strategy PDF embed (optional viewer) -->
+  <section class="strategy-embed" id="strategySection">
+    <header id="strategyHeader">
+      <h2>ONJCRI Impact Strategy (embedded PDF)</h2>
+      <div class="strategy-controls">
+        <a class="btn secondary" id="openPdfBtn" target="_blank" rel="noopener">Open in new tab</a>
+        <button class="btn secondary" id="reloadPdfBtn">Reload PDF</button>
+      </div>
+    </header>
+    <div class="iframe-wrap" id="strategyBody">
+      <iframe id="pdfFrame" class="pdf-frame" title="Impact Strategy PDF" loading="lazy"></iframe>
+      <div class="search-tip" style="margin-top:8px">Tip: click the PDF, then use <strong>Cmd/Ctrl + F</strong> to find words within the document.</div>
+    </div>
+  </section>
+
+  <div id="loadingOverlay">Gathering <span class="pulse-word">IMPACT</span> data from ONJCRI...</div>
+  <div class="tooltip" id="tooltip"></div>
 
   <script>
     /* ===== Config ===== */
-    // Public Strategy PDF you provided (change if needed)
     const STRATEGY_PDF_URL = "https://www.onjcri.org.au/wp-content/uploads/2025/06/ONJCRI_Impact-Strategy_16-page_WEB.pdf";
+    const PDF_PROXY_ENDPOINT = "/api/pdf-proxy"; // you added this on the backend
 
-    /* ===== State ===== */
-    let originalData = null;
-    let lastQuery = "";
-
-    /* ===== Utilities ===== */
+    /* ===== Globals ===== */
+    const tooltip = document.getElementById('tooltip');
     const overlay = document.getElementById('loadingOverlay');
-    function formatAU(dateStr){return dateStr}
+    let originalData = null;
+    let currentQuery = "";
+    let pdfIndex = null; // [{page, text}] once loaded
+    let pdfLoadError = null;
+
+    // PDF.js worker (CDN path derived automatically in v4+, but we set it to be safe)
+    if (window.pdfjsLib) {
+      try {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js";
+      } catch {}
+    }
+
+    function showTooltip(text,x,y){tooltip.textContent=text;tooltip.style.left=(x+10)+'px';tooltip.style.top=(y+10)+'px';tooltip.style.opacity=1}
+    function hideTooltip(){tooltip.style.opacity=0}
+
     function isOverdue(endDateStr){
       if(!endDateStr) return false;
       const parts=endDateStr.split('/');
       if(parts.length!==3) return false;
       const [d,m,y]=parts.map(Number);
-      return new Date(y,m-1,d)<new Date();
+      const end=new Date(y,m-1,d);
+      return end<new Date();
     }
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
-    }
-    function normalize(s){ return String(s||"").toLowerCase(); }
 
-    /* ===== Load data ===== */
     async function loadData(){
       overlay.style.display='flex';
       try{
-        const res = await fetch('/api/milestones');
-        const data = await res.json();
+        const res=await fetch('/api/milestones');
+        const data=await res.json();
         if(!data.success) throw new Error(data.error||'Unknown error');
         originalData=data;
-        applySearch(lastQuery); // render (filtered or full)
-      }catch(err){
-        console.error(err);
-      }finally{
-        overlay.style.display='none';
-      }
+        renderSections(originalData,currentQuery);
+      }catch(e){console.error(e)}
+      finally{overlay.style.display='none'}
     }
 
-    /* ===== Search filter ===== */
-    function filterDataByQuery(data, q){
-      if(!q) return JSON.parse(JSON.stringify(data));
-      const needle = q.toLowerCase();
+    function expandAll(){document.querySelectorAll('#milestoneSections section > div:nth-of-type(3)').forEach(w=>w.classList.remove('hidden'));document.querySelectorAll('.sublist').forEach(l=>l.classList.remove('hidden'));document.querySelectorAll('.activity-toggle').forEach(t=>t.classList.remove('collapsed'));document.querySelectorAll('.section-heading-container').forEach(h=>h.classList.remove('collapsed'))}
+    function collapseAll(){document.querySelectorAll('#milestoneSections section > div:nth-of-type(3)').forEach(w=>w.classList.add('hidden'));document.querySelectorAll('.sublist').forEach(l=>l.classList.add('hidden'));document.querySelectorAll('.activity-toggle').forEach(t=>t.classList.add('collapsed'));document.querySelectorAll('.section-heading-container').forEach(h=>h.classList.add('collapsed'))}
 
-      const filtered = JSON.parse(JSON.stringify(data));
-      filtered.items = filtered.items.map(item=>{
-        const itemText = [item.name,item.description,item.portfolio,item.date].join(' ').toLowerCase();
-        const keepItem = itemText.includes(needle) ||
-          item.subitems.some(sub=> [sub.name,sub.status,sub.sponsor,sub.lead,sub.timeline].join(' ').toLowerCase().includes(needle) );
-
-        if(!keepItem){
-          // If item itself doesn't match, we still may keep only matching subitems
-          const newSubs = item.subitems.filter(sub=> [sub.name,sub.status,sub.sponsor,sub.lead,sub.timeline].join(' ').toLowerCase().includes(needle));
-          if(newSubs.length===0) return null;
-          return {...item, subitems:newSubs};
-        }
-        return item;
-      }).filter(Boolean);
-
-      return filtered;
+    function milestoneAllActivitiesDone(milestoneName){
+      const m=originalData?.items?.find(i=>i.name===milestoneName);
+      if(!m) return false;
+      return m.subitems.length>0 && m.subitems.every(s=>(s.status||'').toLowerCase()==='done');
     }
 
-    function applySearch(q){
-      lastQuery=q||"";
-      const filtered = filterDataByQuery(originalData, lastQuery);
-      renderSections(filtered);
-      searchStrategyMatches(lastQuery);
-    }
-
-    /* ===== Strategy PDF matches (only the term clickable) ===== */
-    async function searchStrategyMatches(query){
-      const box = document.getElementById('strategyMatches');
-      if(!query){
-        box.innerHTML = "";
-        return;
-      }
-      if(!STRATEGY_PDF_URL){
-        box.innerHTML = `<div class="pdf-title">Impact Strategy matches</div>
-          <div class="pdf-open"><a href="#" onclick="return false">No Strategy PDF configured</a></div>`;
-        return;
-      }
-
-      box.innerHTML = `<div class="pdf-title">Impact Strategy matches</div><div class="pdf-open">Searching Strategy PDF…</div>`;
-
-      try{
-        const resp = await fetch(`/api/pdf-search?url=${encodeURIComponent(STRATEGY_PDF_URL)}&q=${encodeURIComponent(query)}`);
-        const json = await resp.json();
-
-        if(!json.success){
-          box.innerHTML = `<div class="pdf-title">Impact Strategy matches</div>
-            <div class="pdf-open">Cannot search the PDF right now. <a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">Open PDF</a></div>`;
-          return;
-        }
-        if(!json.matches || json.matches.length===0){
-          box.innerHTML = `<div class="pdf-title">Impact Strategy matches</div>
-            <div class="pdf-open">No mentions found. <a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">Open PDF</a></div>`;
-          return;
-        }
-
-        const list = json.matches.map(m=>{
-          const escaped = escapeHtml(m.snippet);
-          const rx = new RegExp(`(${escapeRegex(query)})`,'gi');
-          const line = escaped.replace(rx, `<a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener"><mark>$1</mark></a>`);
-          return `<li class="pdf-hit">… ${line} …</li>`;
-        }).join('');
-
-        box.innerHTML = `<div class="pdf-title">Impact Strategy matches</div>
-          <ul class="pdf-hits">${list}</ul>
-          <div class="pdf-open"><a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">Open full Strategy PDF</a></div>`;
-      }catch(e){
-        box.innerHTML = `<div class="pdf-title">Impact Strategy matches</div>
-          <div class="pdf-open">Cannot search the PDF right now. <a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">Open PDF</a></div>`;
-      }
-    }
-
-    function escapeRegex(s){
-      return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
-
-    /* ===== Sections/KPIs config ===== */
     function getSections(){
-      return {
-        "Pillar: Advancing Scientific Research":{
-          milestones:["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10.1","M10.2","M11"],
-          description:"<strong>KPI:</strong> By 2029, enhance ONJCRI’s scientific research capacity by implementing advanced technologies, expanding research outputs, and developing innovative models to identify therapeutic targets and improve cancer outcomes."
-        },
-        "Pillar: Research Translation and Commercialisation":{
-          milestones:["M12","M13","M14","M15","M16","M17","M18","M19"],
-          description:"<strong>KPI:</strong> By 2029, advance research translation by developing multiple therapeutic candidates, progressing clinical trials, and securing commercial partnerships to ensure ONJCRI innovations reach patients."
-        },
-        "Pillar: Operational Excellence":{
-          milestones:["M25","M26","M27","M28","M29","M30","M31","M32","M33","M34","M36","M37","M38","M39","M40","M42","M43"],
-          description:"<strong>KPI:</strong> By 2029, optimise ONJCRI’s operational performance through enhanced governance, financial planning, branding, and stakeholder engagement to ensure long-term sustainability and global recognition."
-        },
-        "Pillar: Sustainability":{
-          milestones:["M22","M23","M24","M35","M44"],
-          description:"<strong>KPI:</strong> By 2029, embed sustainability principles across ONJCRI’s research and operations by reducing carbon emissions, increasing biobank diversity, and achieving full participation in equity initiatives."
-        },
-        "Pillar: Ethical and Regulatory Conduct":{
-          milestones:["M20","M21","M41"],
-          description:"<strong>KPI:</strong> By 2029, uphold the highest standards of ethics, governance, and regulatory compliance through continuous monitoring of research protocols, data security, and risk management frameworks."
-        }
+      return{
+        "Pillar: Advancing Scientific Research":{milestones:["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10.1","M10.2","M11"],description:"<strong>KPI:</strong> By 2029, enhance ONJCRI’s scientific research capacity by implementing advanced technologies, expanding research outputs, and developing innovative models to identify therapeutic targets and improve cancer outcomes."},
+        "Pillar: Research Translation and Commercialisation":{milestones:["M12","M13","M14","M15","M16","M17","M18","M19"],description:"<strong>KPI:</strong> By 2029, advance research translation by developing multiple therapeutic candidates, progressing clinical trials, and securing commercial partnerships to ensure ONJCRI innovations reach patients."},
+        "Pillar: Operational Excellence":{milestones:["M25","M26","M27","M28","M29","M30","M31","M32","M33","M34","M36","M37","M38","M39","M40","M42","M43"],description:"<strong>KPI:</strong> By 2029, optimise ONJCRI’s operational performance through enhanced governance, financial planning, branding, and stakeholder engagement to ensure long-term sustainability and global recognition."},
+        "Pillar: Sustainability":{milestones:["M22","M23","M24","M35","M44"],description:"<strong>KPI:</strong> By 2029, embed sustainability principles across ONJCRI’s research and operations by reducing carbon emissions, increasing biobank diversity, and achieving full participation in equity initiatives."},
+        "Pillar: Ethical and Regulatory Conduct":{milestones:["M20","M21","M41"],description:"<strong>KPI:</strong> By 2029, uphold the highest standards of ethics, governance, and regulatory compliance through continuous monitoring of research protocols, data security, and risk management frameworks."}
       };
-    }
-
-    /* ===== Rendering ===== */
-    function milestoneAllActivitiesDone(name){
-      const ms = originalData?.items?.find(i=>i.name===name);
-      return !!(ms && ms.subitems.length>0 && ms.subitems.every(s=>(s.status||'').toLowerCase()==='done'));
     }
 
     function getMilestoneEmail(m){
@@ -343,164 +249,225 @@
         "M20":"onjcri_pulse_1987381256_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com",
         "M21":"onjcri_pulse_1987381262_a8698a0e5aa9c7801929__63497188@apse2.mx.monday.com"
       };
-      return emails[m]||"impact@onjcri.org";
+      return emails[m]||"default@onjcri.org";
     }
 
-    function renderSections(data){
-      const container=document.getElementById('milestoneSections');
-      container.innerHTML='';
+    function norm(s){return (s||"").toString().toLowerCase()}
+    function highlight(text,q){if(!q||!text)return text||"";const esc=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');return text.replace(new RegExp(esc,'ig'),m=>`<mark>${m}</mark>`)}
+    function itemMatchesQuery(item,q){if(!q)return true;const n=norm(q);return norm(item.name).includes(n)||norm(item.description).includes(n)||norm(item.portfolio).includes(n)||norm(item.date).includes(n)||item.subitems.some(s=>norm(s.name).includes(n)||norm(s.status).includes(n)||norm(s.timeline).includes(n)||norm(s.sponsor).includes(n)||norm(s.lead).includes(n))}
+    function subitemMatchesQuery(sub,q){if(!q)return true;const n=norm(q);return norm(sub.name).includes(n)||norm(sub.status).includes(n)||norm(sub.timeline).includes(n)||norm(sub.sponsor).includes(n)||norm(sub.lead).includes(n)}
+    function filteredDataByQuery(data,q){if(!q)return JSON.parse(JSON.stringify(data));const out={success:data.success,items:[]};data.items.forEach(item=>{if(itemMatchesQuery(item,q)){const c=JSON.parse(JSON.stringify(item));if(!(norm(item.name).includes(norm(q))||norm(item.description).includes(norm(q)))){c.subitems=c.subitems.filter(s=>subitemMatchesQuery(s,q))}out.items.push(c)}});return out}
+
+    function renderSections(data,q=""){
+      const container=document.getElementById('milestoneSections');container.innerHTML='';
       const sections=getSections();
-
-      for(const [sectionTitle,{milestones,description}] of Object.entries(sections)){
-        const itemsForSection=(data.items||[]).filter(i=>milestones.includes(i.name));
-        if(itemsForSection.length===0) continue;
-
+      for(const [title,{milestones,description}] of Object.entries(sections)){
+        const items=data.items.filter(i=>milestones.includes(i.name)); if(items.length===0) continue;
         const section=document.createElement('section');
 
-        const headerContainer=document.createElement('div');
-        headerContainer.className='section-heading-container collapsed';
-        const arrow=document.createElement('span'); arrow.className='section-arrow'; arrow.textContent='▼';
-        const heading=document.createElement('h2'); heading.className='section-heading'; heading.textContent=sectionTitle;
-        headerContainer.appendChild(arrow); headerContainer.appendChild(heading);
-        section.appendChild(headerContainer);
+        const header=document.createElement('div');header.className='section-heading-container collapsed';
+        const arrow=document.createElement('span');arrow.className='section-arrow';arrow.textContent='▼';
+        const h=document.createElement('h2');h.className='section-heading';h.innerHTML=highlight(title,q);
+        header.appendChild(arrow);header.appendChild(h);section.appendChild(header);
 
-        const desc=document.createElement('p'); desc.className='section-description'; desc.innerHTML=description;
-        section.appendChild(desc);
+        const desc=document.createElement('p');desc.className='section-description';desc.innerHTML=description;section.appendChild(desc);
 
-        // Progress bar
-        const allSub=itemsForSection.flatMap(i=>i.subitems);
+        const allSubs=items.flatMap(i=>i.subitems);
         const counts={done:0,working:0,stuck:0,pending:0};
-        allSub.forEach(s=>{
-          const st=(s.status||'').toLowerCase();
-          if(st==='done') counts.done++;
-          else if(st==='working on it') counts.working++;
-          else if(st==='stuck') counts.stuck++;
-          else counts.pending++;
-        });
-        const total=allSub.length||1;
-        const pDone=100*counts.done/total, pWork=100*counts.working/total, pStuck=100*counts.stuck/total, pPend=100*counts.pending/total;
-        const prog=document.createElement('div');
-        prog.className='kpi-progress-container';
-        prog.innerHTML=`
-          <div class="progress-bar">
-            <div class="bar-segment bar-done" style="width:${pDone}%"></div>
-            <div class="bar-segment bar-working" style="width:${pWork}%"></div>
-            <div class="bar-segment bar-stuck" style="width:${pStuck}%"></div>
-            <div class="bar-segment bar-pending" style="width:${pPend}%"></div>
-          </div>`;
+        allSubs.forEach(s=>{const k=(s.status||'').toLowerCase();if(k==='done')counts.done++;else if(k==='working on it')counts.working++;else if(k==='stuck')counts.stuck++;else counts.pending++});
+        const total=allSubs.length||1;
+        const prog=document.createElement('div');prog.className='kpi-progress-container';
+        prog.innerHTML=`<div class="progress-bar">
+          <div class="bar-segment bar-done" style="width:${(counts.done/total)*100}%" data-status="Done: ${counts.done} Activities"></div>
+          <div class="bar-segment bar-working" style="width:${(counts.working/total)*100}%" data-status="Working on It: ${counts.working} Activities"></div>
+          <div class="bar-segment bar-stuck" style="width:${(counts.stuck/total)*100}%" data-status="Stuck: ${counts.stuck} Activities"></div>
+          <div class="bar-segment bar-pending" style="width:${(counts.pending/total)*100}%" data-status="Pending: ${counts.pending} Activities"></div>
+        </div>`;
         section.appendChild(prog);
 
-        // Milestone list (collapsed)
-        const listWrap=document.createElement('div'); listWrap.classList.add('hidden');
-        const list=document.createElement('ul');
+        const listWrap=document.createElement('div');listWrap.classList.add('hidden');
+        const list=document.createElement('ul');list.style.listStyle='none';list.style.paddingLeft='0';
 
-        itemsForSection.forEach((item,idx)=>{
-          const li=document.createElement('li'); li.className='milestone-container'; li.id=item.name;
-          const allDone = milestoneAllActivitiesDone(item.name);
-          const badgeClass = allDone ? 'milestone-badge done' : 'milestone-badge';
-          const sublistId = `${sectionTitle.replace(/\s+/g,'-')}-sub-${idx}`;
-          const toggleId  = `${sectionTitle.replace(/\s+/g,'-')}-tog-${idx}`;
-          const overdueTarget = item.date && isOverdue(item.date);
+        items.forEach((item,idx)=>{
+          const li=document.createElement('li');li.className='milestone-container';li.id=item.name;
+          const allDone=milestoneAllActivitiesDone(item.name);
+          const badgeClass=allDone?'milestone-badge done':'milestone-badge';
+          const sublistId=`${title.replace(/\s+/g,'-')}-sublist-${idx}`;
+          const toggleId =`${title.replace(/\s+/g,'-')}-toggle-${idx}`;
+          const overdue=item.date && isOverdue(item.date);
 
-          const email = getMilestoneEmail(item.name);
-          const emailBody = encodeURIComponent(`Dear ${item.name} Taskforce,\n\nI am writing regarding the progress of a strategic Milestone to which you have been assigned: ${item.description || "No description provided"}\n\n[Please add your specific question here].\n\nThank you,`);
-          const mailto = `mailto:${email}?subject=${encodeURIComponent("Enquiry regarding " + item.name)}&body=${emailBody}`;
-
-          const subHtml = item.subitems.map(sub=>{
-            const s=(sub.status||'').toLowerCase();
-            let cls='status-default', label='Unknown';
-            if(s==='done'){cls='status-done';label='Done'}
-            else if(s==='working on it'){cls='status-working';label='Working on It'}
-            else if(s==='pending'){cls='status-pending';label='Pending'}
-            else if(s==='stuck'){cls='status-stuck';label='Stuck'}
-            const missingSponsor=!sub.sponsor, missingLead=!sub.lead, missingTimeline=!sub.timeline;
-            const overdueClass=sub.timeline && isOverdue(sub.timeline.split('–').pop().trim()) && s!=='done' ? 'overdue' : (missingTimeline ? 'missing-data' : '');
+          const subhtml=item.subitems.map(sub=>{
+            const s=(sub.status||'').toLowerCase();let cls='status-default',label='Unknown';
+            if(s==='done'){cls='status-done';label='Done'} else if(s==='working on it'){cls='status-working';label='Working on It'}
+            else if(s==='pending'){cls='status-pending';label='Pending'} else if(s==='stuck'){cls='status-stuck';label='Stuck'}
+            const missS=!sub.sponsor, missL=!sub.lead, missT=!sub.timeline;
+            const overdueClass=sub.timeline && isOverdue(sub.timeline.split('–').pop().trim()) && s!=='done' ? 'overdue' : (missT?'missing-data':'');
             return `<li class="subitem">
-              <div class="status-indicator ${cls}"></div>
+              <div class="status-indicator ${cls}" data-status="${label}"></div>
               <div class="subitem-content">
-                <span class="pill"><strong>Activity:</strong> ${escapeHtml(sub.name)}</span><br/>
-                <span class="pill"><strong>Executive Sponsor(s):</strong> <span class="${missingSponsor?'missing-data':''}">${escapeHtml(sub.sponsor||'Not Assigned')}</span></span>
-                <span class="pill"><strong>Operational Lead(s):</strong> <span class="${missingLead?'missing-data':''}">${escapeHtml(sub.lead||'Not Assigned')}</span></span>
-                <span class="pill"><strong>Timeline:</strong> <span class="${overdueClass}">${escapeHtml(sub.timeline||'Missing')}</span></span>
-              </div>
-            </li>`;
+                <span class="pill"><strong>Activity:</strong> ${highlight(sub.name,currentQuery)}</span><br/>
+                <span class="pill"><strong>Executive Sponsor(s):</strong> <span class="${missS?'missing-data':''}">${highlight(sub.sponsor||'Not Assigned',currentQuery)}</span></span>
+                <span class="pill"><strong>Operational Lead(s):</strong> <span class="${missL?'missing-data':''}">${highlight(sub.lead||'Not Assigned',currentQuery)}</span></span>
+                <span class="pill"><strong>Timeline:</strong> <span class="${overdueClass}">${highlight(sub.timeline||'Missing',currentQuery)}</span></span>
+              </div></li>`;
           }).join('');
 
-          li.innerHTML = `
-            <div class="${badgeClass}">${item.name}</div>
+          const email = getMilestoneEmail(item.name);
+          const emailBody = encodeURIComponent(`Dear ${item.name} Taskforce,\n\nI am writing regarding the progress of a strategic Milestone to which you have been assigned: ${item.description||"No description provided"}\n\n[Please add your specific question here].\n\nThank you,`);
+          const mailto = `mailto:${email}?subject=${encodeURIComponent("Enquiry regarding "+item.name)}&body=${emailBody}`;
+
+          li.innerHTML=`<div class="${badgeClass}">${item.name}</div>
             <div class="milestone-content">
               <div class="milestone-header">
-                <span class="description">${escapeHtml(item.description||'No description provided.')}</span>
-                <button class="email-taskforce-btn" onclick="window.location.href='${mailto}'">Email Taskforce</button>
+                <span class="description">${highlight(item.description||'No description provided.',currentQuery)}</span>
+                <button class="email-taskforce-btn" onclick="window.location.href='${mailto}'" data-status="Email Taskforce for ${item.name}">Email Taskforce</button>
               </div>
-              ${(item.portfolio||item.date)?`
-                <div class="metadata-line">
-                  ${item.portfolio?`<span><strong>Executive Portfolio(s):</strong> ${escapeHtml(item.portfolio)}</span>`:''}
-                  ${item.date?`<span><strong>Completion Target:</strong> <span class="${overdueTarget?'overdue':''}">${escapeHtml(item.date)}</span></span>`:''}
-                </div>`:''}
+              ${(item.portfolio||item.date)?`<div class="metadata-line">
+                ${item.portfolio?`<span><strong>Executive Portfolio(s):</strong> ${highlight(item.portfolio,currentQuery)}</span>`:''}
+                ${item.date?`<span><strong>Completion Target:</strong> <span class="${overdue?'overdue':''}">${highlight(item.date,currentQuery)}</span></span>`:''}
+              </div>`:''}
               <div class="activity-summary">
                 <div class="activity-toggle" id="${toggleId}"><span class="arrow">▼</span>${item.subitems.length} Activities</div>
                 <div class="status-circles">
-                  ${item.subitems.map(sub=>{
-                    const s=(sub.status||'').toLowerCase();
-                    let cls='pending';
-                    if(s==='done') cls='done';
-                    else if(s==='working on it') cls='working';
-                    else if(s==='stuck') cls='stuck';
-                    return `<div class="circle ${cls}"></div>`;
-                  }).join('')}
+                  ${item.subitems.map(sub=>{const s=(sub.status||'').toLowerCase();let cls='pending',lbl='Pending';if(s==='done'){cls='done';lbl='Done'}else if(s==='working on it'){cls='working';lbl='Working on It'}else if(s==='stuck'){cls='stuck';lbl='Stuck'}return `<div class="circle ${cls}" data-status="${lbl}"></div>`}).join('')}
                 </div>
               </div>
-              <ul id="${sublistId}" class="hidden sublist">${subHtml}</ul>
+              <ul id="${sublistId}" class="hidden sublist">${subhtml}</ul>
             </div>`;
           list.appendChild(li);
-          li.querySelector('.activity-toggle').onclick=()=>toggleSublist(sublistId,toggleId);
+          li.querySelector('.activity-toggle').onclick=()=>{const ul=document.getElementById(sublistId);const t=document.getElementById(toggleId);const hidden=ul.classList.toggle('hidden');t.classList.toggle('collapsed',hidden)}
         });
 
-        listWrap.appendChild(list);
-        section.appendChild(listWrap);
-
-        headerContainer.onclick=()=>{
-          const isHidden=listWrap.classList.toggle('hidden');
-          headerContainer.classList.toggle('collapsed', isHidden);
-        };
-
+        listWrap.appendChild(list);section.appendChild(listWrap);
+        header.onclick=()=>{const hidden=listWrap.classList.toggle('hidden');header.classList.toggle('collapsed',hidden)};
         container.appendChild(section);
+      }
+      document.querySelectorAll('.status-indicator,.status-circles .circle,.bar-segment,.email-taskforce-btn').forEach(el=>{
+        el.addEventListener('mousemove',e=>showTooltip(el.dataset.status||'',e.clientX,e.clientY));
+        el.addEventListener('mouseleave',hideTooltip);
+      });
+    }
+
+    /* ===== Strategy PDF indexing & searching ===== */
+
+    const pdfMatchesPanel = document.getElementById('pdfMatchesPanel');
+    const pdfMatchesBody  = document.getElementById('pdfMatchesBody');
+
+    function showPdfPanel(){ pdfMatchesPanel.classList.remove('hidden'); }
+    function hidePdfPanel(){ pdfMatchesPanel.classList.add('hidden'); }
+
+    async function ensurePdfIndexed(){
+      if (pdfIndex || pdfLoadError) return;
+      showPdfPanel();
+      pdfMatchesBody.innerHTML = "<small>Indexing Strategy PDF…</small>";
+      try {
+        const proxied = `${PDF_PROXY_ENDPOINT}?url=${encodeURIComponent(STRATEGY_PDF_URL)}`;
+        const resp = await fetch(proxied);
+        if (!resp.ok) throw new Error("Proxy fetch failed");
+
+        const ab = await resp.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+
+        const pages = [];
+        for (let p = 1; p <= pdf.numPages; p++) {
+          const page = await pdf.getPage(p);
+          const content = await page.getTextContent();
+          const text = content.items.map(i => i.str).join(" ");
+          pages.push({ page: p, text });
+        }
+        pdfIndex = pages; // cache
+        pdfMatchesBody.innerHTML = "<small>Ready. Use the search box above.</small>";
+      } catch (err) {
+        console.error(err);
+        pdfLoadError = err.message || "Unable to read the Strategy PDF.";
+        pdfMatchesBody.innerHTML = `<small>Unable to read the Strategy PDF (likely blocked or proxy not deployed). You can still <a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">open it in a new tab</a>.</small>`;
       }
     }
 
-    function toggleSublist(subId,togId){
-      const ul=document.getElementById(subId);
-      const tg=document.getElementById(togId);
-      if(!ul||!tg) return;
-      const hid=ul.classList.toggle('hidden');
-      tg.classList.toggle('collapsed',hid);
-    }
-    function expandAll(){
-      document.querySelectorAll('#milestoneSections section > div:nth-of-type(3)').forEach(w=>w.classList.remove('hidden'));
-      document.querySelectorAll('.sublist').forEach(w=>w.classList.remove('hidden'));
-      document.querySelectorAll('.activity-toggle').forEach(t=>t.classList.remove('collapsed'));
-      document.querySelectorAll('.section-heading-container').forEach(h=>h.classList.remove('collapsed'));
-    }
-    function collapseAll(){
-      document.querySelectorAll('#milestoneSections section > div:nth-of-type(3)').forEach(w=>w.classList.add('hidden'));
-      document.querySelectorAll('.sublist').forEach(w=>w.classList.add('hidden'));
-      document.querySelectorAll('.activity-toggle').forEach(t=>t.classList.add('collapsed'));
-      document.querySelectorAll('.section-heading-container').forEach(h=>h.classList.add('collapsed'));
+    function searchPdf(query){
+      if (!query) { pdfMatchesBody.innerHTML = "<small>Enter a search term to see Strategy matches.</small>"; return; }
+      if (pdfLoadError){
+        pdfMatchesBody.innerHTML = `<small>Cannot search the PDF right now. <a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">Open PDF</a></small>`;
+        return;
+      }
+      if (!pdfIndex){
+        pdfMatchesBody.innerHTML = "<small>Indexing Strategy PDF…</small>";
+        return;
+      }
+      const n = query.toLowerCase();
+      const hits = [];
+      for (const pg of pdfIndex){
+        const i = pg.text.toLowerCase().indexOf(n);
+        if (i >= 0){
+          const start = Math.max(0, i - 40);
+          const end   = Math.min(pg.text.length, i + query.length + 40);
+          const snippet = pg.text.slice(start, end);
+          hits.push({page: pg.page, snippet});
+        }
+      }
+      if (hits.length === 0){
+        pdfMatchesBody.innerHTML = "<small>No matches in Strategy.</small>";
+        return;
+      }
+      const list = document.createElement('div');
+      hits.slice(0, 12).forEach(h => {
+        const url = `${STRATEGY_PDF_URL}#page=${h.page}&search=${encodeURIComponent(query)}`;
+        const safe = h.snippet.replace(/[&<>]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[s]));
+        const hi = safe.replace(new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'ig'), m => `<em>${m}</em>`);
+        const div = document.createElement('div');
+        div.className = "match";
+        div.innerHTML = `Page ${h.page}: ${hi} &nbsp; <a href="${url}" target="_blank" rel="noopener">open</a>`;
+        list.appendChild(div);
+      });
+      pdfMatchesBody.innerHTML = "";
+      pdfMatchesBody.appendChild(list);
     }
 
-    /* ===== Wire up search controls ===== */
-    const $q = document.getElementById('searchInput');
-    document.getElementById('searchBtn').addEventListener('click',()=>applySearch($q.value.trim()));
-    document.getElementById('clearBtn').addEventListener('click',()=>{
-      $q.value=''; lastQuery=''; applySearch('');
-    });
-    $q.addEventListener('keydown',e=>{
-      if(e.key==='Enter'){ applySearch($q.value.trim()); }
+    /* ===== Data search UI (now also triggers PDF search) ===== */
+    async function runSearch(){
+      const q=document.getElementById('searchInput').value.trim();
+      currentQuery=q;
+      const data=filteredDataByQuery(originalData,q);
+      renderSections(data,q);
+      expandAll();
+
+      // PDF
+      showPdfPanel();
+      await ensurePdfIndexed();
+      searchPdf(q);
+    }
+    function clearSearch(){
+      const inp=document.getElementById('searchInput');inp.value='';
+      currentQuery='';
+      renderSections(originalData,'');
+      collapseAll();
+      showPdfPanel();
+      pdfMatchesBody.innerHTML = "<small>Enter a search term to see Strategy matches.</small>";
+    }
+    document.getElementById('btnSearch').addEventListener('click', runSearch);
+    document.getElementById('btnClear').addEventListener('click', clearSearch);
+    document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter') runSearch()});
+
+    /* ===== Strategy viewer (embed) ===== */
+    const pdfFrame = document.getElementById('pdfFrame');
+    const openPdfBtn = document.getElementById('openPdfBtn');
+    const reloadBtn  = document.getElementById('reloadPdfBtn');
+    const pdfSrc = STRATEGY_PDF_URL + "#toolbar=1&view=FitH";
+    function loadPdf(){ pdfFrame.src = pdfSrc; openPdfBtn.href = STRATEGY_PDF_URL; }
+    reloadBtn.addEventListener('click', loadPdf);
+
+    const strategyHeader = document.getElementById('strategyHeader');
+    const strategyBody   = document.getElementById('strategyBody');
+    strategyHeader.addEventListener('click', (e)=>{
+      if(e.target.closest('a') || e.target.closest('button')) return;
+      strategyBody.classList.toggle('hidden');
     });
 
-    /* ===== Kick off ===== */
+    // Init
+    loadPdf();
     loadData();
+    // Pre-warm the PDF index in the background so first search feels instant
+    ensurePdfIndexed();
   </script>
 </body>
 </html>
