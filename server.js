@@ -1,9 +1,11 @@
 // server.js
+require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
+const pdfParse = require('pdf-parse'); // server-side PDF text extraction
 
-// If your Node version is < 18, uncomment the next line and add node-fetch to dependencies:
+// (Node 18+ has global fetch. If you’re on Node <18, add node-fetch)
 // const fetch = (...args) => import('node-fetch').then(m => m.default(...args));
 
 const app = express();
@@ -13,9 +15,6 @@ const PORT = process.env.PORT || 10000;
 const MONDAY_API_URL = 'https://api.monday.com/v2';
 const MONDAY_API_KEY = process.env.MONDAY_API_KEY;
 const MAIN_BOARD_ID = process.env.MAIN_BOARD_ID;
-
-// For CORS: set this to the SharePoint origin when embedding, e.g.
-// https://onjcri.sharepoint.com  (or leave "*" during testing)
 const SHAREPOINT_ORIGIN = process.env.SHAREPOINT_ORIGIN || '*';
 
 /* -------------------- Middleware -------------------- */
@@ -51,7 +50,7 @@ async function fetchFromMonday(query) {
   return json;
 }
 
-/* -------------------- API -------------------- */
+/* -------------------- API: milestones -------------------- */
 /**
  * Returns:
  * {
@@ -70,18 +69,11 @@ app.get('/api/milestones', async (_req, res) => {
             items {
               id
               name
-              column_values {
-                id
-                text
-              }
+              column_values { id text }
               subitems {
                 id
                 name
-                column_values {
-                  id
-                  text
-                  value
-                }
+                column_values { id text value }
               }
             }
           }
@@ -92,7 +84,6 @@ app.get('/api/milestones', async (_req, res) => {
     const data = await fetchFromMonday(query);
     const items = data?.data?.boards?.[0]?.items_page?.items || [];
 
-    // Column IDs kept exactly as you used them previously
     const formattedItems = items.map(item => {
       const descriptionCol = item.column_values.find(c => c.id === 'long_text_mkp52kd7');
       const dateCol        = item.column_values.find(c => c.id === 'date4');
@@ -111,7 +102,7 @@ app.get('/api/milestones', async (_req, res) => {
             const from = formatDate(val.from);
             const to   = formatDate(val.to);
             if (from && to) timeline = `${from} – ${to}`;
-          } catch (_) { /* ignore parse error */ }
+          } catch (_) {}
         }
 
         return {
@@ -139,43 +130,59 @@ app.get('/api/milestones', async (_req, res) => {
   }
 });
 
-/**
- * PDF proxy for Strategy search (lets the browser read PDF bytes safely).
- * Usage from the client:
- *   GET /api/pdf-proxy?url=<encoded-public-pdf-url>
- */
-app.get('/api/pdf-proxy', async (req, res) => {
-  try {
-    const { url } = req.query;
-    if (!url) return res.status(400).json({ error: 'Missing ?url' });
+/* -------------------- API: PDF search (server-side) -------------------- */
+const _pdfCache = new Map(); // url -> { fetchedAt:number, text:string }
+const PDF_CACHE_MS = 60 * 60 * 1000; // 1 hour
 
-    const upstream = await fetch(url);
-    if (!upstream.ok) {
-      return res.status(upstream.status).send('Upstream PDF fetch failed');
+app.get('/api/pdf-search', async (req, res) => {
+  try {
+    const { url, q } = req.query;
+    if (!url || !q) return res.status(400).json({ success: false, error: 'Missing url or q' });
+
+    let cached = _pdfCache.get(url);
+    const now = Date.now();
+
+    // (Re)fetch and parse if not cached or stale
+    if (!cached || (now - cached.fetchedAt) > PDF_CACHE_MS) {
+      const resp = await fetch(url);
+      if (!resp.ok) return res.status(502).json({ success: false, error: 'Failed to fetch PDF' });
+      const buf = Buffer.from(await resp.arrayBuffer());
+      const parsed = await pdfParse(buf);       // -> { text, numpages, info, ... }
+      cached = { fetchedAt: now, text: parsed.text || '' };
+      _pdfCache.set(url, cached);
     }
 
-    // Buffer the PDF and send it with permissive CORS for our app
-    const arrayBuf = await upstream.arrayBuffer();
-    res.setHeader('Content-Type', upstream.headers.get('content-type') || 'application/pdf');
-    // cache for an hour (optional)
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-    // allow your front-end origin to read the bytes
-    res.setHeader('Access-Control-Allow-Origin', SHAREPOINT_ORIGIN === '*' ? '*' : SHAREPOINT_ORIGIN);
+    const allText = cached.text || '';
+    const query = String(q).trim();
+    if (!query) return res.json({ success: true, matches: [] });
 
-    res.send(Buffer.from(arrayBuf));
+    const hay = allText.toLowerCase();
+    const needle = query.toLowerCase();
+
+    const matches = [];
+    let idx = 0;
+    while (matches.length < 8 && (idx = hay.indexOf(needle, idx)) !== -1) {
+      const start = Math.max(0, idx - 90);
+      const end   = Math.min(allText.length, idx + query.length + 90);
+      const snippet = allText.slice(start, end).replace(/\s+/g, ' ');
+      matches.push({ snippet });
+      idx = idx + query.length;
+    }
+
+    res.json({ success: true, matches });
   } catch (err) {
-    console.error('[/api/pdf-proxy] Error:', err.message);
-    res.status(500).send('Proxy error');
+    console.error('[/api/pdf-search] Error:', err.message);
+    res.status(500).json({ success: false, error: 'Search error' });
   }
 });
 
-/* -------------------- Health check for Render -------------------- */
+/* -------------------- Health check -------------------- */
 app.get('/healthz', (_req, res) => res.status(200).send('ok'));
 
 /* -------------------- Static frontend -------------------- */
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Catch-all to serve the SPA (must be AFTER API routes)
+// SPA catch-all
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
