@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>KPIs, Milestones, and associated Activities</title>
+  <title>ONJCRI Impact Tracker</title>
   <style>
     body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f7f9fb; color: #2b2b2b; margin: 0; padding: 40px; }
     h1 { font-size: 32px; font-weight: 700; margin-bottom: 16px; color: #103c60; border-bottom: 2px solid #d9e1ea; padding-bottom: 10px; }
+
+    /* Intro */
+    .intro { background: #eef5fb; border: 1px solid #c3d9e9; border-radius: 10px; padding: 20px; margin-bottom: 28px; }
+    .intro h2 { margin-top: 0; color: #003e6b; }
+    .intro p { font-size: 15px; line-height: 1.6; margin: 10px 0; }
 
     /* Search */
     .search-wrap { display: flex; gap: 10px; align-items: center; margin: 12px 0 20px; }
@@ -100,7 +105,32 @@
   </style>
 </head>
 <body>
-  <h1>KPIs, Milestones, and associated Activities</h1>
+  <h1>ONJCRI Impact Tracker</h1>
+
+  <!-- Intro -->
+  <div class="intro">
+    <h2>Welcome</h2>
+    <p>
+      The ONJCRI Impact Tracker allows staff to explore live progress against the Institute’s
+      <strong>Impact Strategy (2025–2029)</strong>. It is structured around five <strong>Strategic Pillars</strong>,
+      each with a KPI. Every KPI is underpinned by <strong>Milestones</strong>, and each Milestone is served by
+      <strong>Activities</strong>. Activities have <strong>Executive Sponsors</strong> and
+      <strong>Operational Leads</strong>.
+    </p>
+    <p>
+      The data below is live, drawn directly from the ONJCRI Impact Strategy Milestone Tracker where Executives and
+      Operational Leads define and update progress. Items may be flagged as <em>stuck</em> if the timeline has passed
+      and the status is not yet “Done”.
+    </p>
+    <p>
+      Use the <strong>search box</strong> to find keywords across KPIs, Milestones, and Activities. You can also click
+      <em>Email Taskforce</em> on any Milestone to notify all its members. If you feel you can contribute, approach the
+      Taskforce to offer support.
+    </p>
+    <p>
+      The full <strong>Impact Strategy</strong> is also provided at the bottom of this page and can be searched directly.
+    </p>
+  </div>
 
   <!-- Search UI -->
   <div class="search-wrap">
@@ -246,7 +276,6 @@
 
     function applySearch(q) {
       currentQuery = (q || '').trim();
-      // Toggle clear button
       clearBtn.style.display = currentQuery ? 'inline-block' : 'none';
 
       if (!originalData) return;
@@ -269,7 +298,6 @@
 
         const milestoneMatches = itemText.includes(query);
 
-        // Filter subitems
         const matchedSubs = (item.subitems || []).filter(sub => {
           const subText = [
             sub.name || '',
@@ -282,10 +310,8 @@
         });
 
         if (milestoneMatches) {
-          // Keep all subitems if milestone matches
           filtered.items.push({ ...item, subitems: [...item.subitems] });
         } else if (matchedSubs.length > 0) {
-          // Keep only matched subitems
           filtered.items.push({ ...item, subitems: matchedSubs });
         }
       });
@@ -293,7 +319,6 @@
       renderSections(filtered, query);
     }
 
-    // Simple highlighter – wrap matches in <mark>
     function highlight(text, query) {
       if (!query || !text) return text || '';
       try {
@@ -304,9 +329,8 @@
       }
     }
 
-    // Debounce helper
     function debounce(fn, ms) {
-      let t; 
+      let t;
       return (...args) => { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
     }
 
@@ -327,22 +351,22 @@
         const section = document.createElement('section');
 
         // Header (collapsible)
-        const headerContainer = document.createElement('div'); 
+        const headerContainer = document.createElement('div');
         headerContainer.className = 'section-heading-container collapsed';
-        const arrow = document.createElement('span'); 
-        arrow.className = 'section-arrow'; 
+        const arrow = document.createElement('span');
+        arrow.className = 'section-arrow';
         arrow.textContent = '▼';
-        const heading = document.createElement('h2'); 
-        heading.className = 'section-heading'; 
+        const heading = document.createElement('h2');
+        heading.className = 'section-heading';
         heading.textContent = sectionTitle;
-        headerContainer.appendChild(arrow); 
-        headerContainer.appendChild(heading); 
+        headerContainer.appendChild(arrow);
+        headerContainer.appendChild(heading);
         section.appendChild(headerContainer);
 
         // KPI description
-        const desc = document.createElement('p'); 
-        desc.className = 'section-description'; 
-        desc.innerHTML = description; 
+        const desc = document.createElement('p');
+        desc.className = 'section-description';
+        desc.innerHTML = description;
         section.appendChild(desc);
 
         // Progress bar (based on activities across milestones in this section)
@@ -356,9 +380,9 @@
           else counts.pending++;
         });
         const total = allSubitems.length || 1;
-        const donePct = (counts.done / total) * 100, 
-              workingPct = (counts.working / total) * 100, 
-              stuckPct = (counts.stuck / total) * 100, 
+        const donePct = (counts.done / total) * 100,
+              workingPct = (counts.working / total) * 100,
+              stuckPct = (counts.stuck / total) * 100,
               pendingPct = (counts.pending / total) * 100;
 
         const progressContainer = document.createElement('div');
@@ -373,10 +397,10 @@
         section.appendChild(progressContainer);
 
         // Milestone list (collapsed by default)
-        const listWrapper = document.createElement('div'); 
+        const listWrapper = document.createElement('div');
         listWrapper.classList.add('hidden');
-        const list = document.createElement('ul'); 
-        list.style.listStyle = 'none'; 
+        const list = document.createElement('ul');
+        list.style.listStyle = 'none';
         list.style.paddingLeft = '0';
 
         itemsForSection.forEach((item, index) => {
