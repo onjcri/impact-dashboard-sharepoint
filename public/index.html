@@ -19,7 +19,9 @@
     .pdf-hits { margin: 6px 0 0; padding-left: 18px; }
     .pdf-hit { margin: 4px 0; }
     .hint { color: #334155; font-size: 14px; }
-    .pdf-open { margin-top: 8px; }
+    .pdf-open { margin-top: 8px; display: flex; gap: 12px; align-items: center; }
+
+    mark { background: #ffed8a; padding: 0 2px; border-radius: 2px; }
 
     .refresh-container-top, .refresh-container { text-align: center; margin-top: 20px; }
     .refresh-btn { padding: 10px 20px; background-color: #0066cc; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s ease, transform 0.1s ease; margin: 0 5px;}
@@ -84,7 +86,7 @@
   </div>
   <div class="tip">Tip: try terms like <em>CRISPR</em>, <em>genomics</em>, <em>clinical trial</em>, etc.</div>
 
-  <!-- Strategy matches area -->
+  <!-- Impact Strategy matches -->
   <div id="strategyMatches" class="callout"></div>
 
   <!-- Controls -->
@@ -107,6 +109,7 @@
 
   <script>
     const STRATEGY_PDF_URL = 'https://www.onjcri.org.au/wp-content/uploads/2025/06/ONJCRI_Impact-Strategy_16-page_WEB.pdf';
+    const PDFJS_VIEWER = 'https://mozilla.github.io/pdf.js/web/viewer.html';
 
     const overlay = document.getElementById('loadingOverlay');
     let originalData = null;
@@ -169,6 +172,14 @@
       return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
 
+    // highlight multiple terms inside already-escaped HTML
+    function highlightEscaped(html, query) {
+      const terms = query.split(/\s+/).filter(Boolean).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      if (!terms.length) return html;
+      const re = new RegExp(`(${terms.join('|')})`, 'gi');
+      return html.replace(re, '<mark>$1</mark>');
+    }
+
     /* ---------- Search across your data ---------- */
     function applySearch(term) {
       if (!originalData) return;
@@ -215,37 +226,57 @@
         box.innerHTML = '';
         return;
       }
-      box.innerHTML = `<div class="pdf-title">Strategy matches</div><div class="hint">Searching Strategy PDF…</div>`;
+      box.innerHTML = `<div class="pdf-title">Impact Strategy matches</div><div class="hint">Searching Strategy PDF…</div>`;
 
       try {
         const resp = await fetch(`/api/pdf-search?url=${encodeURIComponent(STRATEGY_PDF_URL)}&q=${encodeURIComponent(query)}`);
         const json = await resp.json();
 
         if (!json.success) {
-          box.innerHTML = `<div class="pdf-title">Strategy matches</div>
-            <div class="hint">Cannot search the PDF right now. <a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">Open PDF</a></div>`;
+          box.innerHTML = `<div class="pdf-title">Impact Strategy matches</div>
+            <div class="hint">Cannot search the PDF right now.</div>
+            <div class="pdf-open">
+              <a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">Open PDF</a>
+              <a href="${PDFJS_VIEWER}?file=${encodeURIComponent(STRATEGY_PDF_URL)}#search=${encodeURIComponent(query)}" target="_blank" rel="noopener">Open PDF with highlights</a>
+            </div>`;
           return;
         }
 
         if (!json.matches || json.matches.length === 0) {
-          box.innerHTML = `<div class="pdf-title">Strategy matches</div>
-            <div class="hint">No mentions found. <a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">Open PDF</a></div>`;
+          box.innerHTML = `<div class="pdf-title">Impact Strategy matches</div>
+            <div class="hint">No mentions found.</div>
+            <div class="pdf-open">
+              <a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">Open PDF</a>
+              <a href="${PDFJS_VIEWER}?file=${encodeURIComponent(STRATEGY_PDF_URL)}#search=${encodeURIComponent(query)}" target="_blank" rel="noopener">Open PDF with highlights</a>
+            </div>`;
           return;
         }
 
-        const list = json.matches.map(m => `<li class="pdf-hit">… ${escapeHtml(m.snippet)} …</li>`).join('');
+        const list = json.matches.map(m => {
+          const escaped = escapeHtml(m.snippet);
+          const highlighted = highlightEscaped(escaped, query);
+          return `<li class="pdf-hit">… ${highlighted} …</li>`;
+        }).join('');
+
         box.innerHTML = `
-          <div class="pdf-title">Strategy matches</div>
+          <div class="pdf-title">Impact Strategy matches</div>
           <ul class="pdf-hits">${list}</ul>
-          <div class="pdf-open"><a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">Open PDF</a></div>
+          <div class="pdf-open">
+            <a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">Open PDF</a>
+            <a href="${PDFJS_VIEWER}?file=${encodeURIComponent(STRATEGY_PDF_URL)}#search=${encodeURIComponent(query)}" target="_blank" rel="noopener">Open PDF with highlights</a>
+          </div>
         `;
       } catch {
-        box.innerHTML = `<div class="pdf-title">Strategy matches</div>
-          <div class="hint">Cannot search the PDF right now. <a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">Open PDF</a></div>`;
+        box.innerHTML = `<div class="pdf-title">Impact Strategy matches</div>
+          <div class="hint">Cannot search the PDF right now.</div>
+          <div class="pdf-open">
+            <a href="${STRATEGY_PDF_URL}" target="_blank" rel="noopener">Open PDF</a>
+            <a href="${PDFJS_VIEWER}?file=${encodeURIComponent(STRATEGY_PDF_URL)}#search=${encodeURIComponent(query)}" target="_blank" rel="noopener">Open PDF with highlights</a>
+          </div>`;
       }
     }
 
-    /* ---------- Rendering ---------- */
+    /* ---------- Rendering (unchanged structurally) ---------- */
     function renderSections(data) {
       const container = document.getElementById('milestoneSections');
       container.innerHTML = '';
@@ -257,24 +288,14 @@
 
         const section = document.createElement('section');
 
-        // Collapsible header
         const headerContainer = document.createElement('div');
         headerContainer.className = 'section-heading-container collapsed';
-        const arrow = document.createElement('span');
-        arrow.className = 'section-arrow';
-        arrow.textContent = '▼';
-        const heading = document.createElement('h2');
-        heading.className = 'section-heading';
-        heading.textContent = sectionTitle;
-        headerContainer.appendChild(arrow); headerContainer.appendChild(heading);
-        section.appendChild(headerContainer);
+        const arrow = document.createElement('span'); arrow.className = 'section-arrow'; arrow.textContent = '▼';
+        const heading = document.createElement('h2'); heading.className = 'section-heading'; heading.textContent = sectionTitle;
+        headerContainer.appendChild(arrow); headerContainer.appendChild(heading); section.appendChild(headerContainer);
 
-        const desc = document.createElement('p');
-        desc.className = 'section-description';
-        desc.innerHTML = description;
-        section.appendChild(desc);
+        const desc = document.createElement('p'); desc.className = 'section-description'; desc.innerHTML = description; section.appendChild(desc);
 
-        // Progress bar for the section
         const allSubitems = itemsForSection.flatMap(i => i.subitems);
         const counts = { done: 0, working: 0, stuck: 0, pending: 0 };
         allSubitems.forEach(sub => {
@@ -301,7 +322,6 @@
           </div>`;
         section.appendChild(progressContainer);
 
-        // Milestone list (collapsed by default)
         const listWrapper = document.createElement('div'); 
         listWrapper.classList.add('hidden');
         const list = document.createElement('ul'); 
