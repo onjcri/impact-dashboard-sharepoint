@@ -8,23 +8,13 @@
     h1 { font-size: 32px; font-weight: 700; margin-bottom: 16px; color: #103c60; border-bottom: 2px solid #d9e1ea; padding-bottom: 10px; }
 
     /* Search */
-    .search-row { display: flex; gap: 8px; align-items: center; margin: 16px 0 8px; }
-    .search-input { flex: 1; height: 40px; border: 1px solid #c9d6e2; border-radius: 8px; padding: 0 12px; font-size: 14px; }
-    .search-btn, .clear-btn { padding: 10px 14px; background-color: #0066cc; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s ease, transform 0.1s ease; }
-    .clear-btn { background-color: #6c757d; }
-    .search-btn:hover { background-color: #004c99; }
-    .clear-btn:hover { background-color: #565e64; }
-    .search-btn:active, .clear-btn:active { transform: scale(0.98); }
-    .search-hint { font-size: 12px; color: #4a5b6f; margin-bottom: 8px; }
-
-    /* Results summary for strategy */
-    .strategy-results { background: #eef5fb; border: 1px solid #cfe1f1; border-radius: 8px; padding: 12px 14px; margin: 8px 0 18px; }
-    .strategy-results h3 { margin: 0 0 8px; font-size: 16px; color: #003e6b; }
-    .strategy-hit { padding: 8px 10px; border-radius: 6px; border: 1px solid #e0e7ef; background: #fff; margin-bottom: 8px; }
-    .hit-title { font-weight: 600; color: #103c60; }
-    .hit-meta { font-size: 12px; color: #506070; margin-left: 6px; }
-    .hit-snippet { font-size: 13px; margin-top: 4px; color: #2b2b2b; }
-    mark { background: #fff19e; padding: 0 2px; border-radius: 2px; }
+    .search-wrap { display: flex; gap: 10px; align-items: center; margin: 12px 0 20px; }
+    .search-input {
+      flex: 1; font-size: 14px; padding: 10px 12px; border: 1px solid #c9d6e2; border-radius: 6px; outline: none;
+      background: #fff;
+    }
+    .search-input:focus { border-color: #6aa2e4; box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15); }
+    .clear-btn { display: none; }
 
     .refresh-container-top, .refresh-container { text-align: center; margin-top: 24px; }
     .refresh-btn { padding: 10px 20px; background-color: #0066cc; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s ease, transform 0.1s ease; margin: 0 5px;}
@@ -102,26 +92,20 @@
     .pulse-word { animation: pulseImpact 1.5s infinite; color: #28a745; }
     @keyframes pulseImpact { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }
     .tooltip { position: fixed; background: rgba(0, 0, 0, 0.8); color: #fff; padding: 6px 10px; font-size: 12px; border-radius: 4px; pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 1000; }
-  </style>
 
-  <!-- PDF.js (for live PDF text search if CORS allows) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
+    /* Highlight */
+    mark.search-hit { background: #ffee93; padding: 0 2px; border-radius: 2px; }
+    /* Empty state */
+    .empty-state { margin: 24px 6px; padding: 16px; background: #f0f4f8; border: 1px solid #d9e1ea; border-radius: 8px; color: #003e6b; }
+  </style>
 </head>
 <body>
   <h1>KPIs, Milestones, and associated Activities</h1>
 
   <!-- Search UI -->
-  <div class="search-row">
-    <input id="searchInput" class="search-input" type="search" placeholder="Search pillars, KPIs, milestones, activities, and the Strategy PDF…" />
-    <button class="search-btn" id="searchBtn">Search</button>
-    <button class="clear-btn" id="clearBtn">Clear</button>
-  </div>
-  <div class="search-hint">Tip: try terms like <em>CRISPR</em>, <em>genomics</em>, <em>clinical trial</em>, etc.</div>
-
-  <!-- Strategy PDF hits -->
-  <div id="strategyResults" class="strategy-results hidden">
-    <h3>Strategy matches</h3>
-    <div id="strategyHits"></div>
+  <div class="search-wrap">
+    <input id="searchInput" class="search-input" type="search" placeholder="Search milestones, activities, sponsors, leads, timelines…" autocomplete="off" />
+    <button id="clearSearchBtn" class="refresh-btn clear-btn" title="Clear search">Clear</button>
   </div>
 
   <div class="refresh-container-top">
@@ -143,19 +127,15 @@
   <div class="tooltip" id="tooltip"></div>
 
   <script>
-    // === Config ===
-    const STRATEGY_PDF_URL =
-      "https://onjcri.sharepoint.com/sites/Intranet-DocumentsHub/PublishedDocuments/ONJCRI%20Impact%20Strategy_Abridged.pdf";
-    // If CORS prevents reading the PDF, create /strategy-index.json in your public folder (same origin)
-    // Format: [{ "page": 14, "section": "Sustainability", "text": "… sentence that contains CRISPR …" }, ...]
-    const STRATEGY_INDEX_URL = "/strategy-index.json";
-
     const tooltip = document.getElementById('tooltip');
     const overlay = document.getElementById('loadingOverlay');
-    let originalData = null;
-    let currentQuery = "";
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearchBtn');
 
-    function showTooltip(text, x, y) { if(!text) return; tooltip.textContent = text; tooltip.style.left = x + 10 + 'px'; tooltip.style.top = y + 10 + 'px'; tooltip.style.opacity = 1; }
+    let originalData = null;
+    let currentQuery = '';
+
+    function showTooltip(text, x, y) { tooltip.textContent = text || ''; tooltip.style.left = x + 10 + 'px'; tooltip.style.top = y + 10 + 'px'; tooltip.style.opacity = 1; }
     function hideTooltip() { tooltip.style.opacity = 0; }
 
     function isOverdue(endDateStr) {
@@ -174,7 +154,7 @@
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Unknown error');
         originalData = data;
-        renderSections(originalData);
+        applySearch(''); // initial render
       } catch (err) {
         console.error(err);
       } finally {
@@ -262,56 +242,87 @@
       return emails[milestone] || "default@onjcri.org";
     }
 
-    // ===== SEARCH HELPERS =====
-    function escapeRegExp(string) { return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-    function normalize(s) { return (s || '').toString(); }
-    function includesInsensitive(hay, needle) { return normalize(hay).toLowerCase().includes(normalize(needle).toLowerCase()); }
+    /* ---------- SEARCH ---------- */
 
-    function highlight(text) {
-      if (!currentQuery || !text) return text || '';
-      const rx = new RegExp(`(${escapeRegExp(currentQuery)})`, 'ig');
-      return normalize(text).replace(rx, '<mark>$1</mark>');
+    function applySearch(q) {
+      currentQuery = (q || '').trim();
+      // Toggle clear button
+      clearBtn.style.display = currentQuery ? 'inline-block' : 'none';
+
+      if (!originalData) return;
+
+      if (!currentQuery) {
+        renderSections(originalData, null);
+        return;
+      }
+
+      const query = currentQuery.toLowerCase();
+      const filtered = { success: true, items: [] };
+
+      originalData.items.forEach(item => {
+        const itemText = [
+          item.name || '',
+          item.description || '',
+          item.portfolio || '',
+          item.date || ''
+        ].join(' ').toLowerCase();
+
+        const milestoneMatches = itemText.includes(query);
+
+        // Filter subitems
+        const matchedSubs = (item.subitems || []).filter(sub => {
+          const subText = [
+            sub.name || '',
+            sub.status || '',
+            sub.sponsor || '',
+            sub.lead || '',
+            sub.timeline || ''
+          ].join(' ').toLowerCase();
+          return subText.includes(query);
+        });
+
+        if (milestoneMatches) {
+          // Keep all subitems if milestone matches
+          filtered.items.push({ ...item, subitems: [...item.subitems] });
+        } else if (matchedSubs.length > 0) {
+          // Keep only matched subitems
+          filtered.items.push({ ...item, subitems: matchedSubs });
+        }
+      });
+
+      renderSections(filtered, query);
     }
 
-    function subitemMatchesQuery(sub, q) {
-      const s = (sub.status || '').toLowerCase();
-      return (
-        includesInsensitive(sub.name, q) ||
-        includesInsensitive(sub.sponsor, q) ||
-        includesInsensitive(sub.lead, q) ||
-        includesInsensitive(sub.timeline, q) ||
-        includesInsensitive(s, q)
-      );
+    // Simple highlighter – wrap matches in <mark>
+    function highlight(text, query) {
+      if (!query || !text) return text || '';
+      try {
+        const esc = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return (text + '').replace(new RegExp(esc, 'ig'), m => `<mark class="search-hit">${m}</mark>`);
+      } catch {
+        return text;
+      }
     }
 
-    function milestoneHeaderMatchesQuery(item, q) {
-      return (
-        includesInsensitive(item.name, q) ||
-        includesInsensitive(item.description, q) ||
-        includesInsensitive(item.portfolio, q) ||
-        includesInsensitive(item.date, q)
-      );
+    // Debounce helper
+    function debounce(fn, ms) {
+      let t; 
+      return (...args) => { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
     }
 
-    function itemMatchesQuery(item, q) {
-      if (milestoneHeaderMatchesQuery(item, q)) return true;
-      return (item.subitems || []).some(sub => subitemMatchesQuery(sub, q));
-    }
+    /* ---------- RENDERING ---------- */
 
-    // ===== RENDER SECTIONS (with in-place filtering + highlight) =====
-    function renderSections(filteredData) {
+    function renderSections(filteredData, highlightQuery = null) {
       const container = document.getElementById('milestoneSections');
       container.innerHTML = '';
 
       const sections = getSections();
+      let anyContent = false;
 
       for (const [sectionTitle, { milestones, description }] of Object.entries(sections)) {
-        const itemsForSectionAll = filteredData.items.filter(i => milestones.includes(i.name));
-        const itemsForSection = currentQuery
-          ? itemsForSectionAll.filter(i => itemMatchesQuery(i, currentQuery))
-          : itemsForSectionAll;
-
+        const itemsForSection = filteredData.items.filter(i => milestones.includes(i.name));
         if (itemsForSection.length === 0) continue;
+        anyContent = true;
 
         const section = document.createElement('section');
 
@@ -369,16 +380,6 @@
         list.style.paddingLeft = '0';
 
         itemsForSection.forEach((item, index) => {
-          // If searching: filter subitems too
-          const subitemsFiltered = currentQuery
-            ? item.subitems.filter(s => subitemMatchesQuery(s, currentQuery))
-            : item.subitems;
-
-          // If searching and a milestone has no matching subitems + no header match, skip showing its card
-          if (currentQuery && !milestoneHeaderMatchesQuery(item, currentQuery) && subitemsFiltered.length === 0) {
-            return;
-          }
-
           const li = document.createElement('li');
           li.className = 'milestone-container';
           li.id = item.name;
@@ -398,7 +399,8 @@
           );
           const mailtoLink = `mailto:${email}?subject=${encodeURIComponent("Enquiry regarding " + item.name)}&body=${emailBody}`;
 
-          const subitemsHtml = subitemsFiltered.map(sub => {
+          // Activities list (subitems)
+          const subitemsHtml = item.subitems.map(sub => {
             const s = (sub.status || '').toLowerCase();
             let statusClass = 'status-default', statusText = 'Unknown';
             if (s === 'done') { statusClass = 'status-done'; statusText = 'Done'; }
@@ -416,33 +418,32 @@
             return `<li class="subitem">
                       <div class="status-indicator ${statusClass}" data-status="${statusText}"></div>
                       <div class="subitem-content">
-                        <span class="pill"><strong>Activity:</strong> ${highlight(sub.name)}</span><br/>
-                        <span class="pill"><strong>Executive Sponsor(s):</strong> <span class="${missingSponsor ? 'missing-data' : ''}">${highlight(sub.sponsor || 'Not Assigned')}</span></span>
-                        <span class="pill"><strong>Operational Lead(s):</strong> <span class="${missingLead ? 'missing-data' : ''}">${highlight(sub.lead || 'Not Assigned')}</span></span>
-                        <span class="pill"><strong>Timeline:</strong> <span class="${overdueClass}">${highlight(sub.timeline || 'Missing')}</span></span>
+                        <span class="pill"><strong>Activity:</strong> ${highlight(sub.name, highlightQuery)}</span><br/>
+                        <span class="pill"><strong>Executive Sponsor(s):</strong> <span class="${missingSponsor ? 'missing-data' : ''}">${highlight(sub.sponsor || 'Not Assigned', highlightQuery)}</span></span>
+                        <span class="pill"><strong>Operational Lead(s):</strong> <span class="${missingLead ? 'missing-data' : ''}">${highlight(sub.lead || 'Not Assigned', highlightQuery)}</span></span>
+                        <span class="pill"><strong>Timeline:</strong> <span class="${overdueClass}">${highlight(sub.timeline || 'Missing', highlightQuery)}</span></span>
                       </div>
                     </li>`;
           }).join('');
 
-          const activityCountLabel = currentQuery ? subitemsFiltered.length : item.subitems.length;
+          const descHtml = highlight(item.description || 'No description provided.', highlightQuery);
+          const portfolioHtml = item.portfolio ? `<span><strong>Executive Portfolio(s):</strong> ${highlight(item.portfolio, highlightQuery)}</span>` : '';
+          const dateHtml = item.date ? `<span><strong>Completion Target:</strong> <span class="${completionTargetOverdue ? 'overdue' : ''}">${highlight(item.date, highlightQuery)}</span></span>` : '';
 
           li.innerHTML = `
-            <div class="${badgeClass}">${item.name}</div>
+            <div class="${badgeClass}">${highlight(item.name, highlightQuery)}</div>
             <div class="milestone-content">
               <div class="milestone-header">
-                <span class="description">${highlight(item.description || 'No description provided.')}</span>
+                <span class="description">${descHtml}</span>
                 <button class="email-taskforce-btn" onclick="window.location.href='${mailtoLink}'" data-status="Email Taskforce for ${item.name}">Email Taskforce</button>
               </div>
-              ${item.portfolio || item.date ? `<div class="metadata-line">
-                ${item.portfolio ? `<span><strong>Executive Portfolio(s):</strong> ${highlight(item.portfolio)}</span>` : ''}
-                ${item.date ? `<span><strong>Completion Target:</strong> <span class="${completionTargetOverdue ? 'overdue' : ''}">${highlight(item.date)}</span></span>` : ''}
-              </div>` : ''}
+              ${(portfolioHtml || dateHtml) ? `<div class="metadata-line">${portfolioHtml}${dateHtml}</div>` : ''}
               <div class="activity-summary">
                 <div class="activity-toggle" id="${toggleId}">
-                  <span class="arrow">▼</span>${activityCountLabel} Activities
+                  <span class="arrow">▼</span>${item.subitems.length} Activities
                 </div>
                 <div class="status-circles">
-                  ${(currentQuery ? subitemsFiltered : item.subitems).map(sub => {
+                  ${item.subitems.map(sub => {
                     const s = (sub.status || '').toLowerCase();
                     let cls = 'pending', label = 'Pending';
                     if (s === 'done') { cls = 'done'; label = 'Done'; }
@@ -471,7 +472,14 @@
         container.appendChild(section);
       }
 
-      // Tooltips
+      if (!anyContent) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.innerHTML = `No results for <strong>${currentQuery.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</strong>. Try a different search.`;
+        container.appendChild(empty);
+      }
+
+      // Tooltips for little indicators & buttons
       document.querySelectorAll('.status-indicator, .status-circles .circle, .bar-segment, .email-taskforce-btn').forEach(el => {
         el.addEventListener('mousemove', e => showTooltip(el.dataset.status || '', e.clientX, e.clientY));
         el.addEventListener('mouseleave', hideTooltip);
@@ -486,129 +494,20 @@
       toggle.classList.toggle('collapsed', isHidden);
     }
 
-    // ===== Strategy PDF Search (PDF.js first, then JSON fallback) =====
-    async function searchStrategy(query) {
-      const panel = document.getElementById('strategyResults');
-      const hitsDiv = document.getElementById('strategyHits');
-      hitsDiv.innerHTML = '';
-      panel.classList.add('hidden');
-      if (!query || query.trim() === '') return;
-
-      // Try PDF.js (may fail due to CORS)
-      try {
-        const pdf = await pdfjsLib.getDocument({ url: STRATEGY_PDF_URL }).promise;
-        const numPages = pdf.numPages;
-        const results = [];
-        const qLower = query.toLowerCase();
-
-        for (let p = 1; p <= numPages; p++) {
-          const page = await pdf.getPage(p);
-          const txt = await page.getTextContent();
-          const pageText = txt.items.map(it => it.str).join(' ');
-          const idx = pageText.toLowerCase().indexOf(qLower);
-          if (idx !== -1) {
-            const snippet = snippetAround(pageText, idx, query.length);
-            results.push({ page: p, section: null, text: snippet });
-            if (results.length >= 12) break;
-          }
-        }
-
-        if (results.length > 0) {
-          renderStrategyHits(results, query);
-        } else {
-          // If no hits via PDF.js, still show "no results"
-          panel.classList.remove('hidden');
-          hitsDiv.innerHTML = `<div class="strategy-hit"><span class="hit-snippet">No mentions found in the Strategy PDF.</span></div>`;
-        }
-        return;
-      } catch (e) {
-        // Fall through to JSON index
-        // console.warn('PDF.js failed or blocked; using JSON index fallback.', e);
+    /* Wire up search */
+    const onSearchInput = debounce(() => applySearch(searchInput.value), 250);
+    searchInput.addEventListener('input', onSearchInput);
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        searchInput.value = '';
+        applySearch('');
+        searchInput.blur();
       }
-
-      // JSON fallback
-      try {
-        const res = await fetch(STRATEGY_INDEX_URL, { cache: 'no-store' });
-        if (!res.ok) throw new Error('No strategy index available');
-        const index = await res.json(); // [{page, section, text}]
-        const qLower = query.toLowerCase();
-        const results = index.filter(row =>
-          (row.text && row.text.toLowerCase().includes(qLower)) ||
-          (row.section && row.section.toLowerCase().includes(qLower))
-        ).slice(0, 20);
-        if (results.length > 0) {
-          renderStrategyHits(results, query);
-        } else {
-          const panel = document.getElementById('strategyResults');
-          const hitsDiv = document.getElementById('strategyHits');
-          panel.classList.remove('hidden');
-          hitsDiv.innerHTML = `<div class="strategy-hit"><span class="hit-snippet">No mentions found in the Strategy.</span></div>`;
-        }
-      } catch (e2) {
-        // No PDF, no JSON — hide panel silently
-        // console.error('Strategy search unavailable:', e2);
-      }
-    }
-
-    function snippetAround(text, startIdx, len, context = 80) {
-      const begin = Math.max(0, startIdx - context);
-      const end = Math.min(text.length, startIdx + len + context);
-      const prefix = begin > 0 ? '…' : '';
-      const suffix = end < text.length ? '…' : '';
-      const before = text.slice(begin, startIdx);
-      const match = text.slice(startIdx, startIdx + len);
-      const after = text.slice(startIdx + len, end);
-      return `${prefix}${before}<mark>${match}</mark>${after}${suffix}`;
-    }
-
-    function renderStrategyHits(results, query) {
-      const panel = document.getElementById('strategyResults');
-      const hitsDiv = document.getElementById('strategyHits');
-      hitsDiv.innerHTML = '';
-      panel.classList.remove('hidden');
-
-      results.forEach(r => {
-        const page = r.page || '?';
-        const section = r.section ? ` • ${r.section}` : '';
-        const url = `${STRATEGY_PDF_URL}#page=${page}`;
-        const snippet = r.text ? r.text : '';
-        const item = document.createElement('div');
-        item.className = 'strategy-hit';
-        item.innerHTML = `
-          <div><span class="hit-title">Impact Strategy</span>
-               <span class="hit-meta">Page ${page}${section}</span></div>
-          <div class="hit-snippet">${snippet}</div>
-          <div style="margin-top:6px;">
-            <a href="${url}" target="_blank" rel="noopener">Open on page ${page}</a>
-          </div>
-        `;
-        hitsDiv.appendChild(item);
-      });
-    }
-
-    // ===== Search UI wiring =====
-    function doSearch() {
-      const q = document.getElementById('searchInput').value.trim();
-      currentQuery = q;
-      renderSections(originalData);
-      searchStrategy(q);
-      // Expand sections automatically when searching, collapse when cleared
-      if (q) expandAll();
-    }
-
-    function clearSearch() {
-      currentQuery = '';
-      document.getElementById('searchInput').value = '';
-      renderSections(originalData);
-      document.getElementById('strategyHits').innerHTML = '';
-      document.getElementById('strategyResults').classList.add('hidden');
-      collapseAll();
-    }
-
-    document.getElementById('searchBtn').addEventListener('click', doSearch);
-    document.getElementById('clearBtn').addEventListener('click', clearSearch);
-    document.getElementById('searchInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') doSearch();
+    });
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      applySearch('');
+      searchInput.focus();
     });
 
     // Kick things off
